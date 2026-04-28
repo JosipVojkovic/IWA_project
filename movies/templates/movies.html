@@ -21,8 +21,6 @@
     </nav>
 
     <div class="container mt-4">
-      <h2>All Movies</h2>
-
       <div class="row mt-3">
         {% for movie in movies %}
         <div class="col-md-3 mb-4">
@@ -42,7 +40,7 @@
           </div>
         </div>
         {% empty %}
-        <p>No movies in the database.</p>
+        <p class="text-center">There are no movies.</p>
         {% endfor %}
       </div>
     </div>
