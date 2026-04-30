@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0f172a;
+        --muted: #6b7280;
+        --panel: #ffffff;
+        --accent: #0ea5e9;
+        --accent-dark: #0369a1;
+        --bg: #eef2f7;
+      }
+
+      body {
+        font-family: "Space Grotesk", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(
+            1200px 600px at 10% -10%,
+            #dbeafe 0%,
+            transparent 60%
+          ),
+          radial-gradient(900px 500px at 90% 10%, #e0f2fe 0%, transparent 55%),
+          var(--bg);
+        min-height: 100vh;
+      }
+
+      .topbar {
+        backdrop-filter: blur(8px);
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      .sidebar {
+        background: var(--panel);
+        border-right: 1px solid #e5e7eb;
+        min-height: calc(100vh - 64px);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand-pill {
+        background: linear-gradient(120deg, var(--accent), #38bdf8);
+        color: white;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+      }
+
+      .nav-link {
+        color: var(--ink);
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .nav-link:hover {
+        background: #eff6ff;
+        color: var(--accent-dark);
+      }
+
+      .nav-link.active {
+        background: #e0f2fe;
+        color: var(--accent-dark);
+        font-weight: 600;
+      }
+
+      .stat-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        animation: float-in 500ms ease both;
+      }
+
+      .stat-card:nth-child(2) {
+        animation-delay: 80ms;
+      }
+
+      .stat-card:nth-child(3) {
+        animation-delay: 160ms;
+      }
+
+      @keyframes float-in {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .table-card {
+        border-radius: 18px;
+        border: 1px solid #e5e7eb;
+        background: var(--panel);
+      }
+
+      .movie-tile {
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        background: var(--panel);
+        overflow: hidden;
+        transition:
+          transform 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .movie-tile:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .btn-logout {
+        background: linear-gradient(120deg, #f97316, #ef4444);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        padding: 0.45rem 1rem;
+        transition: transform 150ms ease;
+      }
+
+      .btn-logout:hover {
+        color: #fff;
+        background: #ef4444;
+      }
+
+      .sidebar-footer {
+        margin-top: auto;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1.25rem;
+      }
+
+      .avatar-pill {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #0ea5e9, #22c55e);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar topbar px-4 py-3">
+      <div class="d-flex align-items-center gap-3">
+        <span class="brand-pill">Admin</span>
+        <span class="navbar-brand text-white mb-0">Dashboard</span>
+      </div>
+      <div>
+        <a href="{% url 'logout' %}" class="btn btn-logout">Logout</a>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <aside class="col-12 col-md-3 col-lg-2 sidebar p-4">
+          <p class="text-uppercase muted small mb-3">Management</p>
+          <nav class="nav flex-column gap-1">
+            <a
+              class="nav-link {% block nav_users_active %}{% endblock %}"
+              href="#"
+            >
+              Users
+            </a>
+            <a
+              class="nav-link {% block nav_movies_active %}{% endblock %}"
+              href="#"
+            >
+              Movies
+            </a>
+            <a
+              class="nav-link {% block nav_directors_active %}{% endblock %}"
+              href="#"
+            >
+              Directors
+            </a>
+            <a
+              class="nav-link {% block nav_actors_active %}{% endblock %}"
+              href="#"
+            >
+              Actors
+            </a>
+          </nav>
+
+          <div class="sidebar-footer">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-pill">
+                {{ user.username|default:"A"|slice:":1"|upper }}
+              </div>
+              <div>
+                <p class="mb-0 fw-semibold">{{ user.username }}</p>
+                <p class="muted small mb-0">
+                  {{ user.email|default:"No email on file" }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="col-12 col-md-9 col-lg-10 p-4 p-lg-5">
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
