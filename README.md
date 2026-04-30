@@ -35,51 +35,62 @@ Users can browse and filter movies, while administrators can manage content.
 ## 📥 Installation Guide
 
 ### 1. Clone repository
+
 ```bash
 git clone <URL_REPO>
 cd moj_projekt
 ```
 
 ### 2. Create virtual environment
+
 🍏 Mac / Linux
+
 ```bash
-git clone <URL_REPO>
-cd moj_projekt
+python -m venv venv
+source venv/bin/activate
 ```
 
 🪟 Windows
+
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
 ### 3. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4. Database setup
+
 ```bash
 python manage.py migrate
 ```
 
 ### 5. Create admin user
+
 ```bash
 python manage.py createsuperuser
 ```
 
 ### 6. Run server
+
 ```bash
 python manage.py runserver
 ```
 
 ### 7. Open in browser
+
 Main app:
+
 ```bash
 http://127.0.0.1:8000/
 ```
 
 Admin panel:
+
 ```bash
 http://127.0.0.1:8000/admin/
 ```
