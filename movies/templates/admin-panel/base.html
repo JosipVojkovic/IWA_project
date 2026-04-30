@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    <title>{% block title %}Admin Panel{% endblock %}</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -164,7 +164,7 @@
     <nav class="navbar topbar px-4 py-3">
       <div class="d-flex align-items-center gap-3">
         <span class="brand-pill">Admin</span>
-        <span class="navbar-brand text-white mb-0">Dashboard</span>
+        <span class="navbar-brand text-white mb-0">Panel</span>
       </div>
       <div>
         <a href="{% url 'logout' %}" class="btn btn-logout">Logout</a>
@@ -177,8 +177,14 @@
           <p class="text-uppercase muted small mb-3">Management</p>
           <nav class="nav flex-column gap-1">
             <a
+              class="nav-link {% block nav_dashboard_active %}{% endblock %}"
+              href="{% url 'admin_dashboard' %}"
+            >
+              Dashboard
+            </a>
+            <a
               class="nav-link {% block nav_users_active %}{% endblock %}"
-              href="#"
+              href="{% url 'admin_users' %}"
             >
               Users
             </a>

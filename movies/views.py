@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 from movies.models import Movie
 from .forms import RegisterForm
@@ -45,4 +47,35 @@ def movie_list(request):
 def dashboard_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
-    return render(request, 'dashboard/dashboard.html')
+    return render(request, 'admin-panel/dashboard.html')
+
+@login_required
+def users_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+
+    User = get_user_model()
+    search_query = request.GET.get('q', '').strip()
+
+    users = User.objects.all().order_by('-date_joined')
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query) | Q(email__icontains=search_query)
+        )
+
+    stats = {
+        'total_users': User.objects.count(),
+        'active_users': User.objects.filter(is_active=True).count(),
+        'staff_users': User.objects.filter(is_staff=True).count(),
+        'superusers': User.objects.filter(is_superuser=True).count(),
+    }
+
+    return render(
+        request,
+        'admin-panel/users.html',
+        {
+            'users': users,
+            'stats': stats,
+            'search_query': search_query,
+        },
+    )
