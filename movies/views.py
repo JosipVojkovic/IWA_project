@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 
-from movies.models import Movie, Director
+from movies.models import Movie, Director, Actor
 from .forms import RegisterForm
 
 def register_view(request):
@@ -144,6 +144,39 @@ def admin_directors_view(request):
         'admin-panel/directors.html',
         {
             'directors': directors,
+            'stats': stats,
+            'search_query': search_query,
+        },
+    )
+
+@login_required
+def admin_actors_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+
+    search_query = request.GET.get('q', '').strip()
+
+    actors = Actor.objects.annotate(movie_count=Count('movie', distinct=True)).order_by(
+        'last_name',
+        'first_name',
+    )
+    if search_query:
+        actors = actors.filter(
+            Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+        )
+
+    stats = {
+        'total_actors': Actor.objects.count(),
+        'with_birth_date': Actor.objects.filter(birth_date__isnull=False).count(),
+        'with_movies': Actor.objects.filter(movie__isnull=False).distinct().count(),
+    }
+
+    return render(
+        request,
+        'admin-panel/actors.html',
+        {
+            'actors': actors,
             'stats': stats,
             'search_query': search_query,
         },
