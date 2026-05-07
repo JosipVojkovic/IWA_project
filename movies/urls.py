@@ -9,4 +9,5 @@ urlpatterns = [
     path('admin-panel/', views.admin_dashboard_view, name='admin_dashboard'),
     path('admin-panel/users/', views.admin_users_view, name='admin_users'),
     path('admin-panel/movies/', views.admin_movies_view, name='admin_movies'),
+    path('admin-panel/directors/', views.admin_directors_view, name='admin_directors'),
 ]
