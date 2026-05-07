@@ -44,13 +44,13 @@ def movie_list(request):
     return render(request, 'movies.html', {'movies': movies})
 
 @login_required
-def dashboard_view(request):
+def admin_dashboard_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
     return render(request, 'admin-panel/dashboard.html')
 
 @login_required
-def users_view(request):
+def admin_users_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
 
@@ -75,6 +75,42 @@ def users_view(request):
         'admin-panel/users.html',
         {
             'users': users,
+            'stats': stats,
+            'search_query': search_query,
+        },
+    )
+
+@login_required
+def admin_movies_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+
+    search_query = request.GET.get('q', '').strip()
+
+    movies = Movie.objects.select_related('genre', 'director').prefetch_related(
+        'actors'
+    ).order_by('-release_date', 'title')
+    if search_query:
+        movies = movies.filter(
+            Q(title__icontains=search_query)
+            | Q(genre__name__icontains=search_query)
+            | Q(director__first_name__icontains=search_query)
+            | Q(director__last_name__icontains=search_query)
+        )
+
+    stats = {
+        'total_movies': Movie.objects.count(),
+        'with_posters': Movie.objects.exclude(poster='').exclude(
+            poster__isnull=True
+        ).count(),
+        'with_release_date': Movie.objects.filter(release_date__isnull=False).count(),
+    }
+
+    return render(
+        request,
+        'admin-panel/movies.html',
+        {
+            'movies': movies,
             'stats': stats,
             'search_query': search_query,
         },
