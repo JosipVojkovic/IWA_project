@@ -43,7 +43,14 @@
     {% for movie in movies %}
     <div class="col-12 col-md-6 col-xl-4">
       <div class="movie-tile h-100">
-        {% if movie.poster %}
+        {% if movie.poster_url %}
+        <img
+          src="{{ movie.poster_url }}"
+          class="w-100"
+          alt="{{ movie.title }}"
+          style="height: 180px; object-fit: cover"
+        />
+        {% elif movie.poster %}
         <img
           src="{{ movie.poster.url }}"
           class="w-100"
@@ -54,7 +61,7 @@
         <div class="p-3">
           <h3 class="h6 mb-1">{{ movie.title }}</h3>
           <p class="muted small mb-0">{{ movie.release_date }}</p>
-          <p class="small mb-0">{{ movie.genre }}</p>
+          <p class="small mb-0">{{ movie.genre_name|default:movie.genre|default:"Uncategorized" }}</p>
         </div>
       </div>
     </div>

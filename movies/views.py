@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 
 from movies.models import Movie, Director, Actor
-from .forms import RegisterForm, AdminUserCreationForm
+from .forms import RegisterForm, AdminUserCreationForm, AdminMovieForm, GENRE_CHOICES
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -100,6 +100,39 @@ def admin_movies_view(request):
         return render(request, '403.html', status=403)
 
     search_query = request.GET.get('q', '').strip()
+    create_form = AdminMovieForm()
+    selected_actor_ids = []
+    selected_director_id = ""
+
+    if request.method == 'POST':
+        create_form = AdminMovieForm(request.POST)
+        selected_actor_ids = request.POST.getlist('actors')
+        selected_director_id = request.POST.get('director', '')
+        if create_form.is_valid():
+            genre_name = create_form.cleaned_data['genre'] or None
+            director = create_form.cleaned_data['director']
+            poster_url = create_form.cleaned_data['poster_url']
+            poster_url = poster_url.strip() if poster_url else None
+            actors = create_form.cleaned_data['actors']
+
+            movie = Movie.objects.create(
+                title=create_form.cleaned_data['title'].strip(),
+                description=(
+                    create_form.cleaned_data['description'].strip()
+                    if create_form.cleaned_data['description']
+                    else None
+                ),
+                release_date=create_form.cleaned_data['release_date'],
+                duration=create_form.cleaned_data['duration'],
+                poster_url=poster_url,
+                genre_name=genre_name,
+                director=director,
+            )
+
+            if actors:
+                movie.actors.set(actors)
+
+            return redirect('admin_movies')
 
     movies = Movie.objects.select_related('genre', 'director').prefetch_related(
         'actors'
@@ -107,6 +140,7 @@ def admin_movies_view(request):
     if search_query:
         movies = movies.filter(
             Q(title__icontains=search_query)
+            | Q(genre_name__icontains=search_query)
             | Q(genre__name__icontains=search_query)
             | Q(director__first_name__icontains=search_query)
             | Q(director__last_name__icontains=search_query)
@@ -114,8 +148,9 @@ def admin_movies_view(request):
 
     stats = {
         'total_movies': Movie.objects.count(),
-        'with_posters': Movie.objects.exclude(poster='').exclude(
-            poster__isnull=True
+        'with_posters': Movie.objects.filter(
+            (Q(poster__isnull=False) & ~Q(poster=''))
+            | (Q(poster_url__isnull=False) & ~Q(poster_url=''))
         ).count(),
         'with_release_date': Movie.objects.filter(release_date__isnull=False).count(),
     }
@@ -127,6 +162,12 @@ def admin_movies_view(request):
             'movies': movies,
             'stats': stats,
             'search_query': search_query,
+            'create_form': create_form,
+            'genres': GENRE_CHOICES,
+            'actors': Actor.objects.order_by('last_name', 'first_name'),
+            'selected_actor_ids': selected_actor_ids,
+            'directors': Director.objects.order_by('last_name', 'first_name'),
+            'selected_director_id': selected_director_id,
         },
     )
 

@@ -83,7 +83,13 @@
 				<tr>
 					<td>
 						<div class="d-flex align-items-center gap-3">
-							{% if movie.poster %}
+							{% if movie.poster_url %}
+							<img
+								src="{{ movie.poster_url }}"
+								alt="{{ movie.title }}"
+								style="width: 56px; height: 80px; object-fit: cover; border-radius: 10px"
+							/>
+							{% elif movie.poster %}
 							<img
 								src="{{ movie.poster.url }}"
 								alt="{{ movie.title }}"
@@ -103,7 +109,7 @@
 							</div>
 						</div>
 					</td>
-					<td class="muted">{{ movie.genre|default:"Uncategorized" }}</td>
+					<td class="muted">{{ movie.genre_name|default:movie.genre|default:"Uncategorized" }}</td>
 					<td class="muted">{{ movie.director|default:"Unknown" }}</td>
 					<td class="muted">
 						{% if movie.release_date %}
@@ -157,9 +163,24 @@
 					aria-label="Close"
 				></button>
 			</div>
-			<form method="post" enctype="multipart/form-data" action="">
+			<form method="post" action="{% url 'admin_movies' %}">
 				{% csrf_token %}
 				<div class="modal-body">
+					{% if create_form.errors %}
+					<div class="alert alert-danger mb-3">
+						<div class="fw-semibold mb-1">Please fix the errors below.</div>
+						<ul class="mb-0 ps-3">
+							{% for field in create_form %}
+								{% for error in field.errors %}
+									<li>{{ error }}</li>
+								{% endfor %}
+							{% endfor %}
+							{% for error in create_form.non_field_errors %}
+								<li>{{ error }}</li>
+							{% endfor %}
+						</ul>
+					</div>
+					{% endif %}
 					<div class="row g-3">
 						<div class="col-12 col-lg-7">
 							<label class="form-label" for="movieTitle">Title</label>
@@ -169,6 +190,7 @@
 								id="movieTitle"
 								name="title"
 								placeholder="Movie title"
+								value="{{ create_form.data.title|default_if_none:'' }}"
 								required
 							/>
 						</div>
@@ -179,6 +201,7 @@
 								class="form-control"
 								id="movieRelease"
 								name="release_date"
+								value="{{ create_form.data.release_date|default_if_none:'' }}"
 							/>
 						</div>
 						<div class="col-12 col-lg-4">
@@ -191,40 +214,79 @@
 									name="duration"
 									min="1"
 									placeholder="120"
+									value="{{ create_form.data.duration|default_if_none:'' }}"
 								/>
 								<span class="input-group-text">min</span>
 							</div>
 						</div>
 						<div class="col-12 col-lg-4">
 							<label class="form-label" for="movieGenre">Genre</label>
-							<input
-								type="text"
-								class="form-control"
-								id="movieGenre"
-								name="genre"
-								placeholder="Drama, Sci-fi"
-							/>
+							<select class="form-select" id="movieGenre" name="genre">
+								<option value="">Select genre</option>
+								{% for value, label in genres %}
+								<option
+									value="{{ value }}"
+									{% if create_form.is_bound and create_form.data.genre == value %}selected{% endif %}
+								>
+									{{ label }}
+								</option>
+								{% endfor %}
+							</select>
 						</div>
 						<div class="col-12 col-lg-4">
 							<label class="form-label" for="movieDirector">Director</label>
-							<input
-								type="text"
-								class="form-control"
+							<select
+								class="form-select"
 								id="movieDirector"
 								name="director"
-								placeholder="First Last"
 								required
-							/>
+							>
+								<option value="">Select director</option>
+								{% for director in directors %}
+								<option
+									value="{{ director.id }}"
+									{% if director.id|stringformat:"s" == selected_director_id %}selected{% endif %}
+								>
+									{{ director.first_name }} {{ director.last_name }}
+								</option>
+								{% endfor %}
+							</select>
+							<div class="form-text">Choose from existing directors.</div>
 						</div>
 						<div class="col-12">
 							<label class="form-label" for="movieActors">Cast</label>
-							<input
-								type="text"
-								class="form-control"
-								id="movieActors"
-								name="actors"
-								placeholder="Comma-separated actor names"
-							/>
+							<div class="d-flex flex-wrap gap-2 align-items-center">
+								<select class="form-select w-auto" id="movieActorsSelect">
+									<option value="">Select actor</option>
+									{% for actor in actors %}
+									<option value="{{ actor.id }}">
+										{{ actor.first_name }} {{ actor.last_name }}
+									</option>
+									{% endfor %}
+								</select>
+								<button type="button" class="btn btn-outline-secondary btn-sm" id="addActorBtn">
+									Add actor
+								</button>
+							</div>
+							<div class="form-text">Choose an actor, then click Add.</div>
+							<div class="d-flex flex-wrap gap-2 mt-2" id="actorPills">
+								{% for actor in actors %}
+									{% if actor.id|stringformat:"s" in selected_actor_ids %}
+									<span class="badge text-bg-primary d-inline-flex align-items-center gap-1" data-actor-id="{{ actor.id }}">
+										{{ actor.first_name }} {{ actor.last_name }}
+										<button
+											type="button"
+											class="btn btn-sm btn-link text-white text-decoration-none p-0"
+											aria-label="Remove actor"
+											data-remove-actor="{{ actor.id }}"
+										>
+											&times;
+										</button>
+										<input type="hidden" name="actors" value="{{ actor.id }}" />
+									</span>
+									{% endif %}
+								{% endfor %}
+							</div>
 						</div>
 						<div class="col-12">
 							<label class="form-label" for="movieDescription">Synopsis</label>
@@ -234,18 +296,19 @@
 								name="description"
 								rows="4"
 								placeholder="Short description of the movie"
-							></textarea>
+							>{{ create_form.data.description|default_if_none:'' }}</textarea>
 						</div>
 						<div class="col-12">
-							<label class="form-label" for="moviePoster">Poster</label>
+							<label class="form-label" for="moviePoster">Poster URL</label>
 							<input
-								type="file"
+								type="url"
 								class="form-control"
 								id="moviePoster"
-								name="poster"
-								accept="image/*"
+								name="poster_url"
+								placeholder="https://example.com/poster.jpg"
+								value="{{ create_form.data.poster_url|default_if_none:'' }}"
 							/>
-							<div class="form-text">PNG or JPG, up to 2MB.</div>
+							<div class="form-text">Paste a direct image link (JPG or PNG).</div>
 						</div>
 					</div>
 				</div>
@@ -256,4 +319,66 @@
 		</div>
 	</div>
 </div>
+
+{% if create_form.errors %}
+<script>
+	window.addEventListener("load", function () {
+		var modalElement = document.getElementById("addMovieModal");
+		if (modalElement) {
+			var modal = new bootstrap.Modal(modalElement);
+			modal.show();
+		}
+	});
+</script>
+{% endif %}
+<script>
+	window.addEventListener("load", function () {
+		var select = document.getElementById("movieActorsSelect");
+		var addBtn = document.getElementById("addActorBtn");
+		var pills = document.getElementById("actorPills");
+		if (!select || !addBtn || !pills) {
+			return;
+		}
+
+		var existing = new Set();
+		pills.querySelectorAll("[data-actor-id]").forEach(function (pill) {
+			existing.add(pill.getAttribute("data-actor-id"));
+		});
+
+		addBtn.addEventListener("click", function () {
+			var actorId = select.value;
+			if (!actorId || existing.has(actorId)) {
+				return;
+			}
+			var actorName = select.options[select.selectedIndex].text;
+			var pill = document.createElement("span");
+			pill.className = "badge text-bg-primary d-inline-flex align-items-center gap-1";
+			pill.setAttribute("data-actor-id", actorId);
+			pill.innerHTML =
+				actorName +
+				" <button type=\"button\" class=\"btn btn-sm btn-link text-white text-decoration-none p-0\" aria-label=\"Remove actor\" data-remove-actor=\"" +
+				actorId +
+				"\">&times;</button>" +
+				"<input type=\"hidden\" name=\"actors\" value=\"" +
+				actorId +
+				"\" />";
+			pills.appendChild(pill);
+			existing.add(actorId);
+			select.value = "";
+		});
+
+		pills.addEventListener("click", function (event) {
+			var target = event.target;
+			if (!target || !target.hasAttribute("data-remove-actor")) {
+				return;
+			}
+			var actorId = target.getAttribute("data-remove-actor");
+			var pill = pills.querySelector("[data-actor-id='" + actorId + "']");
+			if (pill) {
+				pill.remove();
+			}
+			existing.delete(actorId);
+		});
+	});
+</script>
 {% endblock %}

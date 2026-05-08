@@ -29,6 +29,8 @@ class Movie(models.Model):
     release_date = models.DateField(null=True, blank=True)
     duration = models.PositiveIntegerField(help_text="Duration in minutes", null=True, blank=True)
     poster = models.ImageField(upload_to='posters/', null=True, blank=True)
+    poster_url = models.URLField(null=True, blank=True)
+    genre_name = models.CharField(max_length=100, null=True, blank=True)
 
     genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, blank=True)
     director = models.ForeignKey(Director, on_delete=models.CASCADE)
