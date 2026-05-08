@@ -13,6 +13,7 @@
 	</div>
 	<div class="d-flex flex-wrap gap-2">
 		<button
+			id="addMovieBtn"
 			class="btn btn-primary"
 			type="button"
 			data-bs-toggle="modal"
@@ -128,7 +129,23 @@
 					  <td class="muted">{{ movie.actors.all|length }}</td>
 					<td class="text-end">
 						<div class="d-inline-flex gap-2">
-							<button class="btn btn-sm btn-outline-secondary" type="button">Edit</button>
+							<button
+								class="btn btn-sm btn-outline-secondary movie-edit-btn"
+								type="button"
+								data-bs-toggle="modal"
+								data-bs-target="#addMovieModal"
+								data-movie-id="{{ movie.id }}"
+								data-title="{{ movie.title|escape }}"
+								data-description="{{ movie.description|default_if_none:''|escape }}"
+								data-release-date="{% if movie.release_date %}{{ movie.release_date|date:'Y-m-d' }}{% endif %}"
+								data-duration="{{ movie.duration|default_if_none:'' }}"
+								data-genre="{{ movie.genre_name|default_if_none:'' }}"
+								data-director-id="{{ movie.director.id|default_if_none:'' }}"
+								data-poster-url="{{ movie.poster_url|default_if_none:''|escape }}"
+								data-actor-ids="{% for actor in movie.actors.all %}{{ actor.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
+							>
+								Edit
+							</button>
 						</div>
 					</td>
 				</tr>
@@ -164,6 +181,7 @@
 			</div>
 			<form method="post" action="{% url 'admin_movies' %}">
 				{% csrf_token %}
+				<input type="hidden" name="movie_id" id="movieId" value="{{ create_form.data.movie_id|default_if_none:'' }}" />
 				<div class="modal-body">
 					{% if create_form.errors %}
 					<div class="alert alert-danger mb-3">
@@ -312,7 +330,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary">Save movie</button>
+					<button type="submit" class="btn btn-primary" id="movieSubmitBtn">Save movie</button>
 				</div>
 			</form>
 		</div>
@@ -335,21 +353,44 @@
 		var select = document.getElementById("movieActorsSelect");
 		var addBtn = document.getElementById("addActorBtn");
 		var pills = document.getElementById("actorPills");
+		var addMovieBtn = document.getElementById("addMovieBtn");
+		var modalLabel = document.getElementById("addMovieModalLabel");
+		var submitBtn = document.getElementById("movieSubmitBtn");
+		var movieIdInput = document.getElementById("movieId");
+		var titleInput = document.getElementById("movieTitle");
+		var releaseInput = document.getElementById("movieRelease");
+		var durationInput = document.getElementById("movieDuration");
+		var genreSelect = document.getElementById("movieGenre");
+		var directorSelect = document.getElementById("movieDirector");
+		var descriptionInput = document.getElementById("movieDescription");
+		var posterInput = document.getElementById("moviePoster");
 		if (!select || !addBtn || !pills) {
 			return;
 		}
 
 		var existing = new Set();
-		pills.querySelectorAll("[data-actor-id]").forEach(function (pill) {
-			existing.add(pill.getAttribute("data-actor-id"));
-		});
 
-		addBtn.addEventListener("click", function () {
-			var actorId = select.value;
+		function rebuildExisting() {
+			existing.clear();
+			pills.querySelectorAll("[data-actor-id]").forEach(function (pill) {
+				existing.add(pill.getAttribute("data-actor-id"));
+			});
+		}
+
+		function clearActorPills() {
+			pills.innerHTML = "";
+			existing.clear();
+		}
+
+		function addActorPill(actorId) {
 			if (!actorId || existing.has(actorId)) {
 				return;
 			}
-			var actorName = select.options[select.selectedIndex].text;
+			var option = select.querySelector("option[value='" + actorId + "']");
+			if (!option) {
+				return;
+			}
+			var actorName = option.text;
 			var pill = document.createElement("span");
 			pill.className = "badge text-bg-primary d-inline-flex align-items-center gap-1";
 			pill.setAttribute("data-actor-id", actorId);
@@ -363,6 +404,116 @@
 				"\" />";
 			pills.appendChild(pill);
 			existing.add(actorId);
+		}
+
+		function resetMovieForm() {
+			if (movieIdInput) {
+				movieIdInput.value = "";
+			}
+			if (titleInput) {
+				titleInput.value = "";
+			}
+			if (releaseInput) {
+				releaseInput.value = "";
+			}
+			if (durationInput) {
+				durationInput.value = "";
+			}
+			if (genreSelect) {
+				genreSelect.value = "";
+			}
+			if (directorSelect) {
+				directorSelect.value = "";
+			}
+			if (descriptionInput) {
+				descriptionInput.value = "";
+			}
+			if (posterInput) {
+				posterInput.value = "";
+			}
+			clearActorPills();
+			if (modalLabel) {
+				modalLabel.textContent = "Add new movie";
+			}
+			if (submitBtn) {
+				submitBtn.textContent = "Save movie";
+			}
+		}
+
+		function populateFromButton(button) {
+			if (!button) {
+				return;
+			}
+			if (movieIdInput) {
+				movieIdInput.value = button.getAttribute("data-movie-id") || "";
+			}
+			if (titleInput) {
+				titleInput.value = button.getAttribute("data-title") || "";
+			}
+			if (releaseInput) {
+				releaseInput.value = button.getAttribute("data-release-date") || "";
+			}
+			if (durationInput) {
+				durationInput.value = button.getAttribute("data-duration") || "";
+			}
+			if (genreSelect) {
+				genreSelect.value = button.getAttribute("data-genre") || "";
+			}
+			if (directorSelect) {
+				directorSelect.value = button.getAttribute("data-director-id") || "";
+			}
+			if (descriptionInput) {
+				descriptionInput.value = button.getAttribute("data-description") || "";
+			}
+			if (posterInput) {
+				posterInput.value = button.getAttribute("data-poster-url") || "";
+			}
+			clearActorPills();
+			var actorIdsRaw = button.getAttribute("data-actor-ids") || "";
+			actorIdsRaw.split(",").forEach(function (actorId) {
+				var trimmed = actorId.trim();
+				if (trimmed) {
+					addActorPill(trimmed);
+				}
+			});
+			if (modalLabel) {
+				modalLabel.textContent = "Edit movie";
+			}
+			if (submitBtn) {
+				submitBtn.textContent = "Save changes";
+			}
+		}
+
+		rebuildExisting();
+
+		if (movieIdInput && movieIdInput.value) {
+			if (modalLabel) {
+				modalLabel.textContent = "Edit movie";
+			}
+			if (submitBtn) {
+				submitBtn.textContent = "Save changes";
+			}
+		}
+
+		if (addMovieBtn) {
+			addMovieBtn.addEventListener("click", function () {
+				resetMovieForm();
+			});
+		}
+
+		var editButtons = document.querySelectorAll(".movie-edit-btn");
+		editButtons.forEach(function (button) {
+			button.addEventListener("click", function () {
+				populateFromButton(button);
+			});
+		});
+
+		addBtn.addEventListener("click", function () {
+			var actorId = select.value;
+			if (!actorId || existing.has(actorId)) {
+				return;
+			}
+			addActorPill(actorId);
 			select.value = "";
 		});
 

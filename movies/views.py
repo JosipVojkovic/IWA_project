@@ -115,6 +115,7 @@ def admin_movies_view(request):
         create_form = AdminMovieForm(request.POST)
         selected_actor_ids = request.POST.getlist('actors')
         selected_director_id = request.POST.get('director', '')
+        movie_id = request.POST.get('movie_id')
         if create_form.is_valid():
             genre_name = create_form.cleaned_data['genre'] or None
             director = create_form.cleaned_data['director']
@@ -122,22 +123,34 @@ def admin_movies_view(request):
             poster_url = poster_url.strip() if poster_url else None
             actors = create_form.cleaned_data['actors']
 
-            movie = Movie.objects.create(
-                title=create_form.cleaned_data['title'].strip(),
-                description=(
-                    create_form.cleaned_data['description'].strip()
-                    if create_form.cleaned_data['description']
-                    else None
-                ),
-                release_date=create_form.cleaned_data['release_date'],
-                duration=create_form.cleaned_data['duration'],
-                poster_url=poster_url,
-                genre_name=genre_name,
-                director=director,
+            description = (
+                create_form.cleaned_data['description'].strip()
+                if create_form.cleaned_data['description']
+                else None
             )
 
-            if actors:
-                movie.actors.set(actors)
+            movie = Movie.objects.filter(id=movie_id).first() if movie_id else None
+            if movie:
+                movie.title = create_form.cleaned_data['title'].strip()
+                movie.description = description
+                movie.release_date = create_form.cleaned_data['release_date']
+                movie.duration = create_form.cleaned_data['duration']
+                movie.poster_url = poster_url
+                movie.genre_name = genre_name
+                movie.director = director
+                movie.save()
+            else:
+                movie = Movie.objects.create(
+                    title=create_form.cleaned_data['title'].strip(),
+                    description=description,
+                    release_date=create_form.cleaned_data['release_date'],
+                    duration=create_form.cleaned_data['duration'],
+                    poster_url=poster_url,
+                    genre_name=genre_name,
+                    director=director,
+                )
+
+            movie.actors.set(actors)
 
             return redirect('admin_movies')
 
