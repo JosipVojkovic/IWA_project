@@ -214,10 +214,20 @@ def admin_directors_view(request):
     create_form = AdminDirectorForm()
 
     if request.method == 'POST':
-        create_form = AdminDirectorForm(request.POST)
-        if create_form.is_valid():
-            create_form.save()
-            return redirect('admin_directors')
+        director_id = request.POST.get('director_id')
+        if director_id:
+            director_instance = Director.objects.filter(id=director_id).first()
+            create_form = AdminDirectorForm(request.POST, instance=director_instance)
+            if director_instance and create_form.is_valid():
+                create_form.save()
+                return redirect('admin_directors')
+            if not director_instance:
+                create_form.add_error(None, "Director not found.")
+        else:
+            create_form = AdminDirectorForm(request.POST)
+            if create_form.is_valid():
+                create_form.save()
+                return redirect('admin_directors')
 
     directors = Director.objects.annotate(movie_count=Count('movie')).order_by(
         'last_name',
