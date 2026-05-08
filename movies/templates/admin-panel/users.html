@@ -11,6 +11,7 @@
   </div>
   <div class="d-flex flex-wrap gap-2">
     <button
+      id="addUserBtn"
       class="btn btn-primary"
       type="button"
       data-bs-toggle="modal"
@@ -123,7 +124,20 @@
           </td>
           <td class="text-end">
             <div class="d-inline-flex gap-2">
-              <button class="btn btn-sm btn-outline-secondary" type="button">Edit</button>
+              <button
+                class="btn btn-sm btn-outline-secondary user-edit-btn"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#addUserModal"
+                data-user-id="{{ account.id }}"
+                data-username="{{ account.username|escape }}"
+                data-email="{{ account.email|default_if_none:''|escape }}"
+                data-is-staff="{{ account.is_staff|yesno:'true,false' }}"
+                data-is-superuser="{{ account.is_superuser|yesno:'true,false' }}"
+                data-is-active="{{ account.is_active|yesno:'true,false' }}"
+              >
+                Edit
+              </button>
             </div>
           </td>
         </tr>
@@ -159,6 +173,7 @@
       </div>
       <form method="post" action="{% url 'admin_users' %}">
         {% csrf_token %}
+        <input type="hidden" name="user_id" id="userId" value="{{ create_form.data.user_id|default_if_none:'' }}" />
         <div class="modal-body">
           {% if create_form.errors %}
           <div class="alert alert-danger mb-3">
@@ -277,7 +292,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Create user</button>
+          <button type="submit" class="btn btn-primary" id="userSubmitBtn">Create user</button>
         </div>
       </form>
     </div>
@@ -295,4 +310,128 @@
   });
 </script>
 {% endif %}
+<script>
+  window.addEventListener("load", function () {
+    var addUserBtn = document.getElementById("addUserBtn");
+    var modalLabel = document.getElementById("addUserModalLabel");
+    var submitBtn = document.getElementById("userSubmitBtn");
+    var userIdInput = document.getElementById("userId");
+    var usernameInput = document.getElementById("new-username");
+    var emailInput = document.getElementById("new-email");
+    var passwordInput = document.getElementById("new-password");
+    var passwordConfirmInput = document.getElementById("new-password-confirm");
+    var staffInput = document.getElementById("new-staff");
+    var superuserInput = document.getElementById("new-superuser");
+    var activeInput = document.getElementById("new-active");
+    var notesInput = document.getElementById("new-notes");
+
+    function setPasswordRequired(required) {
+      if (passwordInput) {
+        passwordInput.required = required;
+      }
+      if (passwordConfirmInput) {
+        passwordConfirmInput.required = required;
+      }
+    }
+
+    function resetForm() {
+      if (userIdInput) {
+        userIdInput.value = "";
+      }
+      if (usernameInput) {
+        usernameInput.value = "";
+      }
+      if (emailInput) {
+        emailInput.value = "";
+      }
+      if (passwordInput) {
+        passwordInput.value = "";
+      }
+      if (passwordConfirmInput) {
+        passwordConfirmInput.value = "";
+      }
+      if (staffInput) {
+        staffInput.checked = false;
+      }
+      if (superuserInput) {
+        superuserInput.checked = false;
+      }
+      if (activeInput) {
+        activeInput.checked = true;
+      }
+      if (notesInput) {
+        notesInput.value = "";
+      }
+      if (modalLabel) {
+        modalLabel.textContent = "Add user";
+      }
+      if (submitBtn) {
+        submitBtn.textContent = "Create user";
+      }
+      setPasswordRequired(true);
+    }
+
+    function setEditMode(button) {
+      if (!button) {
+        return;
+      }
+      if (userIdInput) {
+        userIdInput.value = button.getAttribute("data-user-id") || "";
+      }
+      if (usernameInput) {
+        usernameInput.value = button.getAttribute("data-username") || "";
+      }
+      if (emailInput) {
+        emailInput.value = button.getAttribute("data-email") || "";
+      }
+      if (staffInput) {
+        staffInput.checked = button.getAttribute("data-is-staff") === "true";
+      }
+      if (superuserInput) {
+        superuserInput.checked = button.getAttribute("data-is-superuser") === "true";
+      }
+      if (activeInput) {
+        activeInput.checked = button.getAttribute("data-is-active") === "true";
+      }
+      if (passwordInput) {
+        passwordInput.value = "";
+      }
+      if (passwordConfirmInput) {
+        passwordConfirmInput.value = "";
+      }
+      if (notesInput) {
+        notesInput.value = "";
+      }
+      if (modalLabel) {
+        modalLabel.textContent = "Edit user";
+      }
+      if (submitBtn) {
+        submitBtn.textContent = "Save changes";
+      }
+      setPasswordRequired(false);
+    }
+
+    if (addUserBtn) {
+      addUserBtn.addEventListener("click", function () {
+        resetForm();
+      });
+    }
+
+    document.querySelectorAll(".user-edit-btn").forEach(function (button) {
+      button.addEventListener("click", function () {
+        setEditMode(button);
+      });
+    });
+
+    if (userIdInput && userIdInput.value) {
+      if (modalLabel) {
+        modalLabel.textContent = "Edit user";
+      }
+      if (submitBtn) {
+        submitBtn.textContent = "Save changes";
+      }
+      setPasswordRequired(false);
+    }
+  });
+</script>
 {% endblock %}

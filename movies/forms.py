@@ -64,6 +64,48 @@ class AdminUserCreationForm(UserCreationForm):
         ]
 
 
+class AdminUserUpdateForm(forms.ModelForm):
+    email = forms.EmailField(required=True)
+    password1 = forms.CharField(required=False, widget=forms.PasswordInput)
+    password2 = forms.CharField(required=False, widget=forms.PasswordInput)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip()
+        if UserModel.objects.filter(email__iexact=email).exclude(
+            pk=self.instance.pk
+        ).exists():
+            raise forms.ValidationError("A user with that email already exists.")
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
+        if password1 or password2:
+            if password1 != password2:
+                self.add_error("password2", "Passwords do not match.")
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get("password1")
+        if password:
+            user.set_password(password)
+        if commit:
+            user.save()
+        return user
+
+    class Meta:
+        model = UserModel
+        fields = [
+            "username",
+            "email",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+        ]
+
+
 class AdminMovieForm(forms.Form):
     title = forms.CharField(max_length=200)
     description = forms.CharField(required=False)

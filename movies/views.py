@@ -9,6 +9,7 @@ from movies.models import Movie, Director, Actor
 from .forms import (
     RegisterForm,
     AdminUserCreationForm,
+    AdminUserUpdateForm,
     AdminMovieForm,
     AdminDirectorForm,
     AdminActorForm,
@@ -66,16 +67,29 @@ def admin_users_view(request):
     create_form = AdminUserCreationForm()
 
     if request.method == 'POST':
-        create_form = AdminUserCreationForm(request.POST)
-        if create_form.is_valid():
-            user = create_form.save(commit=False)
-            user.is_staff = create_form.cleaned_data['is_staff']
-            user.is_superuser = create_form.cleaned_data['is_superuser']
-            user.is_active = create_form.cleaned_data['is_active']
-            if user.is_superuser:
-                user.is_staff = True
-            user.save()
-            return redirect('admin_users')
+        user_id = request.POST.get('user_id')
+        if user_id:
+            user_instance = User.objects.filter(id=user_id).first()
+            create_form = AdminUserUpdateForm(request.POST, instance=user_instance)
+            if user_instance and create_form.is_valid():
+                user = create_form.save(commit=False)
+                if user.is_superuser:
+                    user.is_staff = True
+                user.save()
+                return redirect('admin_users')
+            if not user_instance:
+                create_form.add_error(None, "User not found.")
+        else:
+            create_form = AdminUserCreationForm(request.POST)
+            if create_form.is_valid():
+                user = create_form.save(commit=False)
+                user.is_staff = create_form.cleaned_data['is_staff']
+                user.is_superuser = create_form.cleaned_data['is_superuser']
+                user.is_active = create_form.cleaned_data['is_active']
+                if user.is_superuser:
+                    user.is_staff = True
+                user.save()
+                return redirect('admin_users')
 
     users = User.objects.all().order_by('-date_joined')
     if search_query:
