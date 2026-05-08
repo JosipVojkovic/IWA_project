@@ -11,6 +11,7 @@ from .forms import (
     AdminUserCreationForm,
     AdminMovieForm,
     AdminDirectorForm,
+    AdminActorForm,
     GENRE_CHOICES,
 )
 
@@ -224,6 +225,13 @@ def admin_actors_view(request):
         return render(request, '403.html', status=403)
 
     search_query = request.GET.get('q', '').strip()
+    create_form = AdminActorForm()
+
+    if request.method == 'POST':
+        create_form = AdminActorForm(request.POST)
+        if create_form.is_valid():
+            create_form.save()
+            return redirect('admin_actors')
 
     actors = Actor.objects.annotate(movie_count=Count('movie', distinct=True)).order_by(
         'last_name',
@@ -248,5 +256,6 @@ def admin_actors_view(request):
             'actors': actors,
             'stats': stats,
             'search_query': search_query,
+            'create_form': create_form,
         },
     )

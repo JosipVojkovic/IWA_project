@@ -12,7 +12,14 @@
     <p class="muted mb-0">Track actors and their movie appearances.</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
-    <button class="btn btn-primary" type="button">Add actor</button>
+    <button
+      class="btn btn-primary"
+      type="button"
+      data-bs-toggle="modal"
+      data-bs-target="#addActorModal"
+    >
+      Add actor
+    </button>
   </div>
 </div>
 
@@ -107,4 +114,98 @@
     </table>
   </div>
 </div>
+
+<div
+  class="modal fade"
+  id="addActorModal"
+  tabindex="-1"
+  aria-labelledby="addActorModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addActorModalLabel">Add actor</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form method="post" action="{% url 'admin_actors' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          {% if create_form.errors %}
+          <div class="alert alert-danger mb-3">
+            <div class="fw-semibold mb-1">Please fix the errors below.</div>
+            <ul class="mb-0 ps-3">
+              {% for field in create_form %}
+                {% for error in field.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+              {% for error in create_form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="actorFirstName">First name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="actorFirstName"
+                name="first_name"
+                value="{{ create_form.data.first_name|default_if_none:'' }}"
+                required
+              />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="actorLastName">Last name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="actorLastName"
+                name="last_name"
+                value="{{ create_form.data.last_name|default_if_none:'' }}"
+                required
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="actorBirthDate">Birth date</label>
+              <input
+                type="date"
+                class="form-control"
+                id="actorBirthDate"
+                name="birth_date"
+                value="{{ create_form.data.birth_date|default_if_none:'' }}"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Save actor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if create_form.errors %}
+<script>
+  window.addEventListener("load", function () {
+    var modalElement = document.getElementById("addActorModal");
+    if (modalElement) {
+      var modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+  });
+</script>
+{% endif %}
 {% endblock %}

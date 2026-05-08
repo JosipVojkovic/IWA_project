@@ -87,3 +87,9 @@ class AdminDirectorForm(forms.ModelForm):
     class Meta:
         model = Director
         fields = ["first_name", "last_name", "birth_date"]
+
+
+class AdminActorForm(forms.ModelForm):
+    class Meta:
+        model = Actor
+        fields = ["first_name", "last_name", "birth_date"]
