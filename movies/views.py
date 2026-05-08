@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 
 from movies.models import Movie, Director, Actor
-from .forms import RegisterForm
+from .forms import RegisterForm, AdminUserCreationForm
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -56,6 +56,19 @@ def admin_users_view(request):
 
     User = get_user_model()
     search_query = request.GET.get('q', '').strip()
+    create_form = AdminUserCreationForm()
+
+    if request.method == 'POST':
+        create_form = AdminUserCreationForm(request.POST)
+        if create_form.is_valid():
+            user = create_form.save(commit=False)
+            user.is_staff = create_form.cleaned_data['is_staff']
+            user.is_superuser = create_form.cleaned_data['is_superuser']
+            user.is_active = create_form.cleaned_data['is_active']
+            if user.is_superuser:
+                user.is_staff = True
+            user.save()
+            return redirect('admin_users')
 
     users = User.objects.all().order_by('-date_joined')
     if search_query:
@@ -77,6 +90,7 @@ def admin_users_view(request):
             'users': users,
             'stats': stats,
             'search_query': search_query,
+            'create_form': create_form,
         },
     )
 
