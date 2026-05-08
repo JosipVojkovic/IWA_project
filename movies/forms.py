@@ -81,3 +81,9 @@ class AdminMovieForm(forms.Form):
         queryset=Actor.objects.order_by("last_name", "first_name"),
         required=False,
     )
+
+
+class AdminDirectorForm(forms.ModelForm):
+    class Meta:
+        model = Director
+        fields = ["first_name", "last_name", "birth_date"]

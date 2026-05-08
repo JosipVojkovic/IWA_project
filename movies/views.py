@@ -6,7 +6,13 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 
 from movies.models import Movie, Director, Actor
-from .forms import RegisterForm, AdminUserCreationForm, AdminMovieForm, GENRE_CHOICES
+from .forms import (
+    RegisterForm,
+    AdminUserCreationForm,
+    AdminMovieForm,
+    AdminDirectorForm,
+    GENRE_CHOICES,
+)
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -177,6 +183,13 @@ def admin_directors_view(request):
         return render(request, '403.html', status=403)
 
     search_query = request.GET.get('q', '').strip()
+    create_form = AdminDirectorForm()
+
+    if request.method == 'POST':
+        create_form = AdminDirectorForm(request.POST)
+        if create_form.is_valid():
+            create_form.save()
+            return redirect('admin_directors')
 
     directors = Director.objects.annotate(movie_count=Count('movie')).order_by(
         'last_name',
@@ -201,6 +214,7 @@ def admin_directors_view(request):
             'directors': directors,
             'stats': stats,
             'search_query': search_query,
+            'create_form': create_form,
         },
     )
 
