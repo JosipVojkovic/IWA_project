@@ -265,10 +265,20 @@ def admin_actors_view(request):
     create_form = AdminActorForm()
 
     if request.method == 'POST':
-        create_form = AdminActorForm(request.POST)
-        if create_form.is_valid():
-            create_form.save()
-            return redirect('admin_actors')
+        actor_id = request.POST.get('actor_id')
+        if actor_id:
+            actor_instance = Actor.objects.filter(id=actor_id).first()
+            create_form = AdminActorForm(request.POST, instance=actor_instance)
+            if actor_instance and create_form.is_valid():
+                create_form.save()
+                return redirect('admin_actors')
+            if not actor_instance:
+                create_form.add_error(None, "Actor not found.")
+        else:
+            create_form = AdminActorForm(request.POST)
+            if create_form.is_valid():
+                create_form.save()
+                return redirect('admin_actors')
 
     actors = Actor.objects.annotate(movie_count=Count('movie', distinct=True)).order_by(
         'last_name',
