@@ -14,21 +14,21 @@
   <div class="col-12 col-md-4">
     <div class="stat-card p-3">
       <p class="muted small mb-1">Total Movies</p>
-      <h2 class="h4 mb-0">{{ movies|length }}</h2>
+      <h2 class="h4 mb-0">{{ total_movies }}</h2>
     </div>
   </div>
   <div class="col-12 col-md-4">
     <div class="stat-card p-3">
       <p class="muted small mb-1">Latest Release</p>
       <h2 class="h5 mb-0">
-        {% if movies %}{{ movies.0.title }}{% else %}None{% endif %}
+        {% if latest_release %}{{ latest_release.title }}{% else %}None{% endif %}
       </h2>
     </div>
   </div>
   <div class="col-12 col-md-4">
     <div class="stat-card p-3">
       <p class="muted small mb-1">Admin Status</p>
-      <h2 class="h5 mb-0">Superuser</h2>
+      <h2 class="h5 mb-0">{{ admin_status }}</h2>
     </div>
   </div>
 </div>
@@ -36,7 +36,7 @@
 <div class="table-card p-4 mb-4">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h2 class="h5 mb-0">Movies Overview</h2>
-    <a class="btn btn-sm btn-outline-primary" href="#">View all</a>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'admin_movies' %}">View all</a>
   </div>
 
   <div class="row g-3">
@@ -46,13 +46,6 @@
         {% if movie.poster_url %}
         <img
           src="{{ movie.poster_url }}"
-          class="w-100"
-          alt="{{ movie.title }}"
-          style="height: 180px; object-fit: cover"
-        />
-        {% elif movie.poster %}
-        <img
-          src="{{ movie.poster.url }}"
           class="w-100"
           alt="{{ movie.title }}"
           style="height: 180px; object-fit: cover"

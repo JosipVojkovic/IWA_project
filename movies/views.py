@@ -55,7 +55,34 @@ def movie_list(request):
 def admin_dashboard_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
-    return render(request, 'admin-panel/dashboard.html')
+    total_movies = Movie.objects.count()
+    latest_release = (
+        Movie.objects.filter(release_date__isnull=False)
+        .order_by('-release_date', 'title')
+        .first()
+    )
+    movies = (
+        Movie.objects.select_related('genre', 'director')
+        .order_by('-release_date', 'title')
+        .prefetch_related('actors')
+    )
+    admin_status = (
+        'Superuser'
+        if request.user.is_superuser
+        else 'Staff'
+        if request.user.is_staff
+        else 'User'
+    )
+    return render(
+        request,
+        'admin-panel/dashboard.html',
+        {
+            'movies': movies[:6],
+            'total_movies': total_movies,
+            'latest_release': latest_release,
+            'admin_status': admin_status,
+        },
+    )
 
 @login_required
 def admin_users_view(request):
