@@ -16,6 +16,8 @@ from .forms import (
     GENRE_CHOICES,
 )
 
+GENRE_LIST = [g[0] for g in GENRE_CHOICES]
+
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('movie_list')
@@ -48,8 +50,22 @@ def logout_view(request):
 
 @login_required
 def movie_list(request):
-    movies = Movie.objects.all()
-    return render(request, 'movies.html', {'movies': movies})
+    title_query = request.GET.get('title', '').strip()
+    genre_query = request.GET.get('genre', '').strip()
+
+    movies = Movie.objects.select_related('genre', 'director').order_by('-release_date', 'title')
+
+    if title_query:
+        movies = movies.filter(title__icontains=title_query)
+    if genre_query:
+        movies = movies.filter(genre_name=genre_query)
+
+    return render(request, 'movies.html', {
+        'movies': movies,
+        'title_query': title_query,
+        'genre_query': genre_query,
+        'genres': GENRE_LIST,
+    })
 
 @login_required
 def admin_dashboard_view(request):
