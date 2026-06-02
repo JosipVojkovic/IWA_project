@@ -181,6 +181,8 @@
       .avatar-pill {
         width: 40px;
         height: 40px;
+        min-width: 40px;
+        flex-shrink: 0;
         border-radius: 14px;
         background: linear-gradient(135deg, #0ea5e9, #22c55e);
         color: #fff;
@@ -243,9 +245,9 @@
               <div class="avatar-pill">
                 {{ user.username|default:"A"|slice:":1"|upper }}
               </div>
-              <div>
-                <p class="mb-0 fw-semibold">{{ user.username }}</p>
-                <p class="muted small mb-0">
+              <div style="min-width: 0;">
+                <p class="mb-0 fw-semibold text-truncate">{{ user.username }}</p>
+                <p class="muted small mb-0 text-truncate">
                   {{ user.email|default:"No email on file" }}
                 </p>
               </div>
