@@ -112,6 +112,12 @@
               >
                 Edit
               </button>
+              <form method="post" action="{% url 'admin_directors' %}" onsubmit="return confirm('Delete {{ director.first_name|escapejs }} {{ director.last_name|escapejs }}? This will also delete all their movies.')">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete" />
+                <input type="hidden" name="director_id" value="{{ director.id }}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
             </div>
           </td>
         </tr>

@@ -146,6 +146,12 @@
 							>
 								Edit
 							</button>
+							<form method="post" action="{% url 'admin_movies' %}" onsubmit="return confirm('Delete {{ movie.title|escapejs }}?')">
+								{% csrf_token %}
+								<input type="hidden" name="action" value="delete" />
+								<input type="hidden" name="movie_id" value="{{ movie.id }}" />
+								<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+							</form>
 						</div>
 					</td>
 				</tr>

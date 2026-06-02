@@ -169,6 +169,12 @@ def admin_movies_view(request):
     selected_director_id = ""
 
     if request.method == 'POST':
+        if request.POST.get('action') == 'delete':
+            movie = Movie.objects.filter(id=request.POST.get('movie_id')).first()
+            if movie:
+                movie.delete()
+            return redirect('admin_movies')
+
         create_form = AdminMovieForm(request.POST)
         selected_actor_ids = request.POST.getlist('actors')
         selected_director_id = request.POST.get('director', '')
@@ -257,6 +263,12 @@ def admin_directors_view(request):
     create_form = AdminDirectorForm()
 
     if request.method == 'POST':
+        if request.POST.get('action') == 'delete':
+            director = Director.objects.filter(id=request.POST.get('director_id')).first()
+            if director:
+                director.delete()
+            return redirect('admin_directors')
+
         director_id = request.POST.get('director_id')
         if director_id:
             director_instance = Director.objects.filter(id=director_id).first()
@@ -308,6 +320,12 @@ def admin_actors_view(request):
     create_form = AdminActorForm()
 
     if request.method == 'POST':
+        if request.POST.get('action') == 'delete':
+            actor = Actor.objects.filter(id=request.POST.get('actor_id')).first()
+            if actor:
+                actor.delete()
+            return redirect('admin_actors')
+
         actor_id = request.POST.get('actor_id')
         if actor_id:
             actor_instance = Actor.objects.filter(id=actor_id).first()

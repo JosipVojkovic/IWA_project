@@ -112,6 +112,12 @@
               >
                 Edit
               </button>
+              <form method="post" action="{% url 'admin_actors' %}" onsubmit="return confirm('Delete {{ actor.first_name|escapejs }} {{ actor.last_name|escapejs }}?')">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete" />
+                <input type="hidden" name="actor_id" value="{{ actor.id }}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
             </div>
           </td>
         </tr>
