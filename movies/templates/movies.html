@@ -3,78 +3,384 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Movies</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark px-4">
-      <span class="navbar-brand">🎬 Movies</span>
-      <div>
-        <span class="text-white me-3">{{ user.username }}</span>
-        <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm"
-          >Logout</a
-        >
-      </div>
-    </nav>
+    <title>CineVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
 
-    <div class="container mt-4">
-      <form method="get" class="row g-2 mb-4">
-        <div class="col-md-5">
+      :root {
+        --bg: #09090f;
+        --surface: #12121c;
+        --surface2: #1a1a28;
+        --border: rgba(255,255,255,0.07);
+        --gold: #e8b84b;
+        --gold-dim: rgba(232,184,75,0.15);
+        --text: #f0eff8;
+        --muted: #7a7a94;
+        --radius: 14px;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        min-height: 100vh;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 80vw 60vh at 20% -10%, rgba(232,184,75,0.06) 0%, transparent 60%),
+          radial-gradient(ellipse 60vw 50vh at 80% 100%, rgba(99,102,241,0.05) 0%, transparent 55%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── NAVBAR ── */
+      .navbar-wrap {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        width: calc(100% - 48px);
+        max-width: 1200px;
+      }
+
+      .navbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        background: rgba(18, 18, 28, 0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+      }
+
+      .brand {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.5rem;
+        letter-spacing: 0.08em;
+        color: var(--gold);
+        text-decoration: none;
+        line-height: 1;
+      }
+
+      .brand span {
+        color: var(--text);
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .nav-user {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-weight: 500;
+        letter-spacing: 0.01em;
+      }
+
+      .nav-user strong {
+        color: var(--text);
+      }
+
+      .btn-logout {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--bg);
+        background: var(--gold);
+        border: none;
+        border-radius: 999px;
+        padding: 7px 18px;
+        text-decoration: none;
+        transition: opacity 0.2s, transform 0.15s;
+        display: inline-block;
+      }
+
+      .btn-logout:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
+        color: var(--bg);
+      }
+
+      /* ── PAGE CONTENT ── */
+      .page-content {
+        position: relative;
+        z-index: 1;
+        padding-top: 108px;
+        padding-bottom: 60px;
+      }
+
+      /* ── HERO HEADING ── */
+      .page-heading {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .page-heading h1 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        letter-spacing: 0.06em;
+        color: var(--text);
+        margin: 0 0 6px;
+        line-height: 1;
+      }
+
+      .page-heading h1 em {
+        color: var(--gold);
+        font-style: normal;
+      }
+
+      .page-heading p {
+        color: var(--muted);
+        font-size: 0.95rem;
+        font-weight: 400;
+        margin: 0;
+      }
+
+      /* ── FILTER FORM ── */
+      .filter-wrap {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 48px;
+      }
+
+      .filter-input,
+      .filter-select {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        color: var(--text);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 10px 20px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        min-width: 180px;
+      }
+
+      .filter-input::placeholder { color: var(--muted); }
+
+      .filter-input:focus,
+      .filter-select:focus {
+        border-color: rgba(232,184,75,0.4);
+        box-shadow: 0 0 0 3px rgba(232,184,75,0.08);
+      }
+
+      .filter-select option {
+        background: var(--surface2);
+        color: var(--text);
+      }
+
+      .btn-filter {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        color: var(--bg);
+        background: var(--gold);
+        border: none;
+        border-radius: 999px;
+        padding: 10px 24px;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+      }
+
+      .btn-filter:hover { opacity: 0.85; transform: translateY(-1px); }
+
+      .btn-clear {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 10px 20px;
+        text-decoration: none;
+        transition: color 0.2s, border-color 0.2s;
+      }
+
+      .btn-clear:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+      /* ── MOVIE GRID ── */
+      .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 24px;
+      }
+
+      .movie-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+        cursor: pointer;
+      }
+
+      .movie-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,184,75,0.2);
+        border-color: rgba(232,184,75,0.25);
+      }
+
+      .movie-poster {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .movie-poster-placeholder {
+        width: 100%;
+        height: 280px;
+        background: var(--surface2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 2rem;
+      }
+
+      .movie-info {
+        padding: 14px 16px 16px;
+      }
+
+      .movie-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text);
+        margin: 0 0 6px;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .movie-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .movie-genre {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--gold);
+        background: var(--gold-dim);
+        border-radius: 999px;
+        padding: 3px 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 110px;
+      }
+
+      .movie-year {
+        font-size: 0.78rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      /* ── EMPTY STATE ── */
+      .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--muted);
+      }
+
+      .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+      .empty-state p { font-size: 1rem; margin: 0; }
+    </style>
+  </head>
+  <body>
+
+    <div class="navbar-wrap">
+      <div class="navbar-inner">
+        <a href="#" class="brand">Cine<span>Vault</span></a>
+        <div class="nav-right">
+          <span class="nav-user">Hi, <strong>{{ user.username }}</strong></span>
+          <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="container-xl px-4">
+
+        <div class="page-heading">
+          <h1>The <em>Vault</em></h1>
+          <p>{{ movies|length }} film{{ movies|length|pluralize }} in the collection</p>
+        </div>
+
+        <form method="get" class="filter-wrap">
           <input
             type="text"
             name="title"
-            class="form-control"
+            class="filter-input"
             placeholder="Search by title..."
             value="{{ title_query }}"
           />
-        </div>
-        <div class="col-md-4">
-          <select name="genre" class="form-select">
+          <select name="genre" class="filter-select">
             <option value="">All genres</option>
             {% for genre in genres %}
             <option value="{{ genre }}" {% if genre == genre_query %}selected{% endif %}>{{ genre }}</option>
             {% endfor %}
           </select>
-        </div>
-        <div class="col-md-auto">
-          <button type="submit" class="btn btn-primary">Filter</button>
+          <button type="submit" class="btn-filter">Search</button>
           {% if title_query or genre_query %}
-          <a href="{% url 'movie_list' %}" class="btn btn-outline-secondary">Clear</a>
+          <a href="{% url 'movie_list' %}" class="btn-clear">Clear</a>
           {% endif %}
-        </div>
-      </form>
+        </form>
 
-      <div class="row mt-3">
-        {% for movie in movies %}
-        <div class="col-md-3 mb-4">
-          <div class="card h-100 shadow-sm">
+        <div class="movies-grid">
+          {% for movie in movies %}
+          <div class="movie-card">
             {% if movie.poster_url %}
-            <img
-              src="{{ movie.poster_url }}"
-              class="card-img-top"
-              alt="{{ movie.title }}"
-            />
+            <img src="{{ movie.poster_url }}" class="movie-poster" alt="{{ movie.title }}" />
             {% elif movie.poster %}
-            <img
-              src="{{ movie.poster.url }}"
-              class="card-img-top"
-              alt="{{ movie.title }}"
-            />
+            <img src="{{ movie.poster.url }}" class="movie-poster" alt="{{ movie.title }}" />
+            {% else %}
+            <div class="movie-poster-placeholder">🎬</div>
             {% endif %}
-            <div class="card-body">
-              <h5 class="card-title">{{ movie.title }}</h5>
-              <p class="card-text text-muted">{{ movie.release_date }}</p>
-              <p class="card-text">{{ movie.genre_name|default:movie.genre|default:"Uncategorized" }}</p>
+            <div class="movie-info">
+              <p class="movie-title">{{ movie.title }}</p>
+              <div class="movie-meta">
+                <span class="movie-genre">{{ movie.genre_name|default:movie.genre|default:"—" }}</span>
+                {% if movie.release_date %}
+                <span class="movie-year">{{ movie.release_date|date:"Y" }}</span>
+                {% endif %}
+              </div>
             </div>
           </div>
+          {% empty %}
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="icon">🎞️</div>
+            <p>No movies match your search.</p>
+          </div>
+          {% endfor %}
         </div>
-        {% empty %}
-        <p class="text-center">There are no movies.</p>
-        {% endfor %}
+
       </div>
     </div>
+
   </body>
 </html>
