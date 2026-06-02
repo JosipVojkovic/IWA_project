@@ -5,7 +5,6 @@ from django.db import transaction
 
 from movies.models import Actor, Director, Movie
 
-# Release dates use a Jan 1 placeholder to avoid guessing exact premiere dates.
 MOVIES = [
     {
         "title": "The Shawshank Redemption",
