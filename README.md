@@ -69,19 +69,25 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-### 5. Create admin user
+### 5. Seed the database (optional)
+
+```bash
+python manage.py seed_data
+```
+
+### 6. Create admin user
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 6. Run server
+### 7. Run server
 
 ```bash
 python manage.py runserver
 ```
 
-### 7. Open in browser
+### 8. Open in browser
 
 Main app:
 
@@ -90,6 +96,12 @@ http://127.0.0.1:8000/
 ```
 
 Admin panel:
+
+```bash
+http://127.0.0.1:8000/admin-panel/
+```
+
+Django admin panel:
 
 ```bash
 http://127.0.0.1:8000/admin/
