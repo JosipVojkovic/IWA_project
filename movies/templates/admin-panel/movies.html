@@ -110,7 +110,7 @@
 							</div>
 						</div>
 					</td>
-					<td class="muted">{{ movie.genre_name|default:movie.genre|default:"Uncategorized" }}</td>
+					<td class="muted">{{ movie.genre|default:"Uncategorized" }}</td>
 					<td class="muted">{{ movie.director|default:"Unknown" }}</td>
 					<td class="muted">
 						{% if movie.release_date %}
@@ -139,7 +139,7 @@
 								data-description="{{ movie.description|default_if_none:''|escape }}"
 								data-release-date="{% if movie.release_date %}{{ movie.release_date|date:'Y-m-d' }}{% endif %}"
 								data-duration="{{ movie.duration|default_if_none:'' }}"
-								data-genre="{{ movie.genre_name|default_if_none:'' }}"
+								data-genre="{{ movie.genre|default_if_none:'' }}"
 								data-director-id="{{ movie.director.id|default_if_none:'' }}"
 								data-poster-url="{{ movie.poster_url|default_if_none:''|escape }}"
 								data-actor-ids="{% for actor in movie.actors.all %}{{ actor.id }}{% if not forloop.last %},{% endif %}{% endfor %}"

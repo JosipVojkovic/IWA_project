@@ -8,7 +8,7 @@ from movies.models import Actor, Director, Movie
 MOVIES = [
     {
         "title": "The Shawshank Redemption",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(1994, 1, 1),
         "duration": None,
         "director": ("Frank", "Darabont"),
@@ -20,7 +20,7 @@ MOVIES = [
     },
     {
         "title": "The Godfather",
-        "genre_name": "Crime",
+        "genre": "Crime",
         "release_date": date(1972, 1, 1),
         "duration": None,
         "director": ("Francis Ford", "Coppola"),
@@ -32,7 +32,7 @@ MOVIES = [
     },
     {
         "title": "The Dark Knight",
-        "genre_name": "Action",
+        "genre": "Action",
         "release_date": date(2008, 1, 1),
         "duration": None,
         "director": ("Christopher", "Nolan"),
@@ -44,7 +44,7 @@ MOVIES = [
     },
     {
         "title": "Pulp Fiction",
-        "genre_name": "Crime",
+        "genre": "Crime",
         "release_date": date(1994, 1, 1),
         "duration": None,
         "director": ("Quentin", "Tarantino"),
@@ -56,7 +56,7 @@ MOVIES = [
     },
     {
         "title": "Fight Club",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(1999, 1, 1),
         "duration": None,
         "director": ("David", "Fincher"),
@@ -68,7 +68,7 @@ MOVIES = [
     },
     {
         "title": "Forrest Gump",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(1994, 1, 1),
         "duration": None,
         "director": ("Robert", "Zemeckis"),
@@ -80,7 +80,7 @@ MOVIES = [
     },
     {
         "title": "Gladiator",
-        "genre_name": "Action",
+        "genre": "Action",
         "release_date": date(2000, 1, 1),
         "duration": None,
         "director": ("Ridley", "Scott"),
@@ -92,7 +92,7 @@ MOVIES = [
     },
     {
         "title": "Titanic",
-        "genre_name": "Romance",
+        "genre": "Romance",
         "release_date": date(1997, 1, 1),
         "duration": None,
         "director": ("James", "Cameron"),
@@ -104,7 +104,7 @@ MOVIES = [
     },
     {
         "title": "The Silence of the Lambs",
-        "genre_name": "Thriller",
+        "genre": "Thriller",
         "release_date": date(1991, 1, 1),
         "duration": None,
         "director": ("Jonathan", "Demme"),
@@ -116,7 +116,7 @@ MOVIES = [
     },
     {
         "title": "Schindler's List",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(1993, 1, 1),
         "duration": None,
         "director": ("Steven", "Spielberg"),
@@ -128,7 +128,7 @@ MOVIES = [
     },
     {
         "title": "Jurassic Park",
-        "genre_name": "Adventure",
+        "genre": "Adventure",
         "release_date": date(1993, 1, 1),
         "duration": None,
         "director": ("Steven", "Spielberg"),
@@ -140,7 +140,7 @@ MOVIES = [
     },
     {
         "title": "Saving Private Ryan",
-        "genre_name": "War",
+        "genre": "War",
         "release_date": date(1998, 1, 1),
         "duration": None,
         "director": ("Steven", "Spielberg"),
@@ -152,7 +152,7 @@ MOVIES = [
     },
     {
         "title": "The Departed",
-        "genre_name": "Crime",
+        "genre": "Crime",
         "release_date": date(2006, 1, 1),
         "duration": None,
         "director": ("Martin", "Scorsese"),
@@ -164,7 +164,7 @@ MOVIES = [
     },
     {
         "title": "Goodfellas",
-        "genre_name": "Crime",
+        "genre": "Crime",
         "release_date": date(1990, 1, 1),
         "duration": None,
         "director": ("Martin", "Scorsese"),
@@ -176,7 +176,7 @@ MOVIES = [
     },
     {
         "title": "The Wolf of Wall Street",
-        "genre_name": "Comedy",
+        "genre": "Comedy",
         "release_date": date(2013, 1, 1),
         "duration": None,
         "director": ("Martin", "Scorsese"),
@@ -188,7 +188,7 @@ MOVIES = [
     },
     {
         "title": "The Social Network",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2010, 1, 1),
         "duration": None,
         "director": ("David", "Fincher"),
@@ -200,7 +200,7 @@ MOVIES = [
     },
     {
         "title": "Se7en",
-        "genre_name": "Thriller",
+        "genre": "Thriller",
         "release_date": date(1995, 1, 1),
         "duration": None,
         "director": ("David", "Fincher"),
@@ -212,7 +212,7 @@ MOVIES = [
     },
     {
         "title": "The Green Mile",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(1999, 1, 1),
         "duration": None,
         "director": ("Frank", "Darabont"),
@@ -224,7 +224,7 @@ MOVIES = [
     },
     {
         "title": "Parasite",
-        "genre_name": "Thriller",
+        "genre": "Thriller",
         "release_date": date(2019, 1, 1),
         "duration": None,
         "director": ("Bong", "Joon-ho"),
@@ -236,7 +236,7 @@ MOVIES = [
     },
     {
         "title": "Oldboy",
-        "genre_name": "Thriller",
+        "genre": "Thriller",
         "release_date": date(2003, 1, 1),
         "duration": None,
         "director": ("Park", "Chan-wook"),
@@ -248,7 +248,7 @@ MOVIES = [
     },
     {
         "title": "The Grand Budapest Hotel",
-        "genre_name": "Comedy",
+        "genre": "Comedy",
         "release_date": date(2014, 1, 1),
         "duration": None,
         "director": ("Wes", "Anderson"),
@@ -260,7 +260,7 @@ MOVIES = [
     },
     {
         "title": "Whiplash",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2014, 1, 1),
         "duration": None,
         "director": ("Damien", "Chazelle"),
@@ -272,7 +272,7 @@ MOVIES = [
     },
     {
         "title": "La La Land",
-        "genre_name": "Romance",
+        "genre": "Romance",
         "release_date": date(2016, 1, 1),
         "duration": None,
         "director": ("Damien", "Chazelle"),
@@ -284,7 +284,7 @@ MOVIES = [
     },
     {
         "title": "Mad Max: Fury Road",
-        "genre_name": "Action",
+        "genre": "Action",
         "release_date": date(2015, 1, 1),
         "duration": None,
         "director": ("George", "Miller"),
@@ -296,7 +296,7 @@ MOVIES = [
     },
     {
         "title": "The Pianist",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2002, 1, 1),
         "duration": None,
         "director": ("Roman", "Polanski"),
@@ -308,7 +308,7 @@ MOVIES = [
     },
     {
         "title": "City of God",
-        "genre_name": "Crime",
+        "genre": "Crime",
         "release_date": date(2002, 1, 1),
         "duration": None,
         "director": ("Fernando", "Meirelles"),
@@ -320,7 +320,7 @@ MOVIES = [
     },
     {
         "title": "The Prestige",
-        "genre_name": "Mystery",
+        "genre": "Mystery",
         "release_date": date(2006, 1, 1),
         "duration": None,
         "director": ("Christopher", "Nolan"),
@@ -332,7 +332,7 @@ MOVIES = [
     },
     {
         "title": "Memento",
-        "genre_name": "Mystery",
+        "genre": "Mystery",
         "release_date": date(2000, 1, 1),
         "duration": None,
         "director": ("Christopher", "Nolan"),
@@ -344,7 +344,7 @@ MOVIES = [
     },
     {
         "title": "The Martian",
-        "genre_name": "Sci-Fi",
+        "genre": "Sci-Fi",
         "release_date": date(2015, 1, 1),
         "duration": None,
         "director": ("Ridley", "Scott"),
@@ -356,7 +356,7 @@ MOVIES = [
     },
     {
         "title": "Blade Runner 2049",
-        "genre_name": "Sci-Fi",
+        "genre": "Sci-Fi",
         "release_date": date(2017, 1, 1),
         "duration": None,
         "director": ("Denis", "Villeneuve"),
@@ -368,7 +368,7 @@ MOVIES = [
     },
     {
         "title": "Arrival",
-        "genre_name": "Sci-Fi",
+        "genre": "Sci-Fi",
         "release_date": date(2016, 1, 1),
         "duration": None,
         "director": ("Denis", "Villeneuve"),
@@ -380,7 +380,7 @@ MOVIES = [
     },
     {
         "title": "Dune",
-        "genre_name": "Sci-Fi",
+        "genre": "Sci-Fi",
         "release_date": date(2021, 1, 1),
         "duration": None,
         "director": ("Denis", "Villeneuve"),
@@ -392,7 +392,7 @@ MOVIES = [
     },
     {
         "title": "Get Out",
-        "genre_name": "Horror",
+        "genre": "Horror",
         "release_date": date(2017, 1, 1),
         "duration": None,
         "director": ("Jordan", "Peele"),
@@ -404,7 +404,7 @@ MOVIES = [
     },
     {
         "title": "Black Panther",
-        "genre_name": "Action",
+        "genre": "Action",
         "release_date": date(2018, 1, 1),
         "duration": None,
         "director": ("Ryan", "Coogler"),
@@ -416,7 +416,7 @@ MOVIES = [
     },
     {
         "title": "The Shape of Water",
-        "genre_name": "Fantasy",
+        "genre": "Fantasy",
         "release_date": date(2017, 1, 1),
         "duration": None,
         "director": ("Guillermo", "del Toro"),
@@ -428,7 +428,7 @@ MOVIES = [
     },
     {
         "title": "Pan's Labyrinth",
-        "genre_name": "Fantasy",
+        "genre": "Fantasy",
         "release_date": date(2006, 1, 1),
         "duration": None,
         "director": ("Guillermo", "del Toro"),
@@ -440,7 +440,7 @@ MOVIES = [
     },
     {
         "title": "The Revenant",
-        "genre_name": "Adventure",
+        "genre": "Adventure",
         "release_date": date(2015, 1, 1),
         "duration": None,
         "director": ("Alejandro", "Gonzalez Inarritu"),
@@ -452,7 +452,7 @@ MOVIES = [
     },
     {
         "title": "Birdman",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2014, 1, 1),
         "duration": None,
         "director": ("Alejandro", "Gonzalez Inarritu"),
@@ -464,7 +464,7 @@ MOVIES = [
     },
     {
         "title": "There Will Be Blood",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2007, 1, 1),
         "duration": None,
         "director": ("Paul Thomas", "Anderson"),
@@ -476,7 +476,7 @@ MOVIES = [
     },
     {
         "title": "Her",
-        "genre_name": "Romance",
+        "genre": "Romance",
         "release_date": date(2013, 1, 1),
         "duration": None,
         "director": ("Spike", "Jonze"),
@@ -488,7 +488,7 @@ MOVIES = [
     },
     {
         "title": "Moonlight",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2016, 1, 1),
         "duration": None,
         "director": ("Barry", "Jenkins"),
@@ -500,7 +500,7 @@ MOVIES = [
     },
     {
         "title": "12 Years a Slave",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2013, 1, 1),
         "duration": None,
         "director": ("Steve", "McQueen"),
@@ -512,7 +512,7 @@ MOVIES = [
     },
     {
         "title": "The Imitation Game",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2014, 1, 1),
         "duration": None,
         "director": ("Morten", "Tyldum"),
@@ -524,7 +524,7 @@ MOVIES = [
     },
     {
         "title": "The Truman Show",
-        "genre_name": "Comedy",
+        "genre": "Comedy",
         "release_date": date(1998, 1, 1),
         "duration": None,
         "director": ("Peter", "Weir"),
@@ -536,7 +536,7 @@ MOVIES = [
     },
     {
         "title": "The Sixth Sense",
-        "genre_name": "Mystery",
+        "genre": "Mystery",
         "release_date": date(1999, 1, 1),
         "duration": None,
         "director": ("M. Night", "Shyamalan"),
@@ -548,7 +548,7 @@ MOVIES = [
     },
     {
         "title": "A Beautiful Mind",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2001, 1, 1),
         "duration": None,
         "director": ("Ron", "Howard"),
@@ -560,7 +560,7 @@ MOVIES = [
     },
     {
         "title": "The Hurt Locker",
-        "genre_name": "War",
+        "genre": "War",
         "release_date": date(2008, 1, 1),
         "duration": None,
         "director": ("Kathryn", "Bigelow"),
@@ -572,7 +572,7 @@ MOVIES = [
     },
     {
         "title": "Slumdog Millionaire",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2008, 1, 1),
         "duration": None,
         "director": ("Danny", "Boyle"),
@@ -584,7 +584,7 @@ MOVIES = [
     },
     {
         "title": "The King's Speech",
-        "genre_name": "Drama",
+        "genre": "Drama",
         "release_date": date(2010, 1, 1),
         "duration": None,
         "director": ("Tom", "Hooper"),
@@ -596,7 +596,7 @@ MOVIES = [
     },
     {
         "title": "Argo",
-        "genre_name": "Thriller",
+        "genre": "Thriller",
         "release_date": date(2012, 1, 1),
         "duration": None,
         "director": ("Ben", "Affleck"),
@@ -632,13 +632,13 @@ class Command(BaseCommand):
                         "release_date": data["release_date"],
                         "duration": data["duration"],
                         "poster_url": data["poster_url"],
-                        "genre_name": data["genre_name"],
+                        "genre": data["genre"],
                         "director": director,
                     },
                 )
                 if not created:
                     movie.release_date = data["release_date"]
-                    movie.genre_name = data["genre_name"]
+                    movie.genre = data["genre"]
                     movie.director = director
                     if data["duration"] is not None:
                         movie.duration = data["duration"]

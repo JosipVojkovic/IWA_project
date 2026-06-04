@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 
-from movies.models import Movie, Director, Actor
+from movies.models import Movie, Director, Actor, GENRE_CHOICES
 from .forms import (
     RegisterForm,
     AdminUserCreationForm,
@@ -13,10 +13,7 @@ from .forms import (
     AdminMovieForm,
     AdminDirectorForm,
     AdminActorForm,
-    GENRE_CHOICES,
 )
-
-GENRE_LIST = [g[0] for g in GENRE_CHOICES]
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -53,18 +50,18 @@ def movie_list(request):
     title_query = request.GET.get('title', '').strip()
     genre_query = request.GET.get('genre', '').strip()
 
-    movies = Movie.objects.select_related('genre', 'director').order_by('-release_date', 'title')
+    movies = Movie.objects.order_by('-release_date', 'title')
 
     if title_query:
         movies = movies.filter(title__icontains=title_query)
     if genre_query:
-        movies = movies.filter(genre_name=genre_query)
+        movies = movies.filter(genre=genre_query)
 
     return render(request, 'movies.html', {
         'movies': movies,
         'title_query': title_query,
         'genre_query': genre_query,
-        'genres': GENRE_LIST,
+        'genres': [g[0] for g in GENRE_CHOICES],
     })
 
 @login_required
@@ -78,7 +75,7 @@ def admin_dashboard_view(request):
         .first()
     )
     movies = (
-        Movie.objects.select_related('genre', 'director')
+        Movie.objects.select_related('director')
         .order_by('-release_date', 'title')
         .prefetch_related('actors')
     )
@@ -175,55 +172,21 @@ def admin_movies_view(request):
                 movie.delete()
             return redirect('admin_movies')
 
-        create_form = AdminMovieForm(request.POST)
+        movie_id = request.POST.get('movie_id')
+        movie_instance = Movie.objects.filter(id=movie_id).first() if movie_id else None
+        create_form = AdminMovieForm(request.POST, instance=movie_instance)
         selected_actor_ids = request.POST.getlist('actors')
         selected_director_id = request.POST.get('director', '')
-        movie_id = request.POST.get('movie_id')
         if create_form.is_valid():
-            genre_name = create_form.cleaned_data['genre'] or None
-            director = create_form.cleaned_data['director']
-            poster_url = create_form.cleaned_data['poster_url']
-            poster_url = poster_url.strip() if poster_url else None
-            actors = create_form.cleaned_data['actors']
-
-            description = (
-                create_form.cleaned_data['description'].strip()
-                if create_form.cleaned_data['description']
-                else None
-            )
-
-            movie = Movie.objects.filter(id=movie_id).first() if movie_id else None
-            if movie:
-                movie.title = create_form.cleaned_data['title'].strip()
-                movie.description = description
-                movie.release_date = create_form.cleaned_data['release_date']
-                movie.duration = create_form.cleaned_data['duration']
-                movie.poster_url = poster_url
-                movie.genre_name = genre_name
-                movie.director = director
-                movie.save()
-            else:
-                movie = Movie.objects.create(
-                    title=create_form.cleaned_data['title'].strip(),
-                    description=description,
-                    release_date=create_form.cleaned_data['release_date'],
-                    duration=create_form.cleaned_data['duration'],
-                    poster_url=poster_url,
-                    genre_name=genre_name,
-                    director=director,
-                )
-
-            movie.actors.set(actors)
-
+            create_form.save()
             return redirect('admin_movies')
 
-    movies = Movie.objects.select_related('genre', 'director').prefetch_related(
+    movies = Movie.objects.select_related('director').prefetch_related(
         'actors'
     ).order_by('-release_date', 'title')
     if search_query:
         movies = movies.filter(
             Q(title__icontains=search_query)
-            | Q(genre_name__icontains=search_query)
             | Q(genre__name__icontains=search_query)
             | Q(director__first_name__icontains=search_query)
             | Q(director__last_name__icontains=search_query)

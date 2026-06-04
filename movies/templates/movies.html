@@ -62,7 +62,7 @@
             <div class="movie-info">
               <p class="movie-title">{{ movie.title }}</p>
               <div class="movie-meta">
-                <span class="movie-genre">{{ movie.genre_name|default:movie.genre|default:"—" }}</span>
+                <span class="movie-genre">{{ movie.genre|default:"—" }}</span>
                 {% if movie.release_date %}
                 <span class="movie-year">{{ movie.release_date|date:"Y" }}</span>
                 {% endif %}
