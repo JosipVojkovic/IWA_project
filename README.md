@@ -1,4 +1,4 @@
-# 🎬 CineVault Django Project
+# 🎬 Movies Django Project
 
 A Django web application for managing movies, actors, and genres.  
 Users can browse and filter movies, while administrators can manage content.
