@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Actor, Director
+from .models import Actor, Director, Genre
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -19,24 +19,6 @@ class RegisterForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 UserModel = get_user_model()
-
-GENRE_CHOICES = [
-    ("Action", "Action"),
-    ("Adventure", "Adventure"),
-    ("Animation", "Animation"),
-    ("Comedy", "Comedy"),
-    ("Crime", "Crime"),
-    ("Documentary", "Documentary"),
-    ("Drama", "Drama"),
-    ("Family", "Family"),
-    ("Fantasy", "Fantasy"),
-    ("Horror", "Horror"),
-    ("Mystery", "Mystery"),
-    ("Romance", "Romance"),
-    ("Sci-Fi", "Sci-Fi"),
-    ("Thriller", "Thriller"),
-    ("War", "War"),
-]
 
 
 class AdminUserCreationForm(UserCreationForm):
@@ -112,9 +94,10 @@ class AdminMovieForm(forms.Form):
     release_date = forms.DateField(required=False)
     duration = forms.IntegerField(required=False, min_value=1)
     poster_url = forms.URLField(required=False)
-    genre = forms.ChoiceField(
-        choices=[("", "Select genre")] + GENRE_CHOICES,
+    genre = forms.ModelChoiceField(
+        queryset=Genre.objects.order_by("name"),
         required=False,
+        empty_label="Select genre",
     )
     director = forms.ModelChoiceField(
         queryset=Director.objects.order_by("last_name", "first_name"),
