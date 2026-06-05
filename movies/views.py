@@ -74,18 +74,7 @@ def admin_dashboard_view(request):
         .order_by('-release_date', 'title')
         .first()
     )
-    movies = (
-        Movie.objects.select_related('director')
-        .order_by('-release_date', 'title')
-        .prefetch_related('actors')
-    )
-    admin_status = (
-        'Superuser'
-        if request.user.is_superuser
-        else 'Staff'
-        if request.user.is_staff
-        else 'User'
-    )
+    movies = Movie.objects.order_by('-release_date', 'title')
     return render(
         request,
         'admin-panel/dashboard.html',
@@ -93,7 +82,6 @@ def admin_dashboard_view(request):
             'movies': movies[:6],
             'total_movies': total_movies,
             'latest_release': latest_release,
-            'admin_status': admin_status,
         },
     )
 
