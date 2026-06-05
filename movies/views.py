@@ -91,8 +91,6 @@ def admin_dashboard_view(request):
     )
 
 
-# --- Users ---
-
 @login_required
 def admin_users_view(request):
     if not request.user.is_superuser:
@@ -156,8 +154,6 @@ def admin_user_edit_view(request, user_id):
     return render(request, 'admin-panel/user_form.html', {'form': form, 'title': 'Edit user', 'is_edit': True})
 
 
-# --- Movies ---
-
 @login_required
 def admin_movies_view(request):
     if not request.user.is_superuser:
@@ -218,8 +214,6 @@ def admin_movie_edit_view(request, movie_id):
     return render(request, 'admin-panel/movie_form.html', {'form': form, 'title': 'Edit movie'})
 
 
-# --- Directors ---
-
 @login_required
 def admin_directors_view(request):
     if not request.user.is_superuser:
@@ -275,8 +269,6 @@ def admin_director_edit_view(request, director_id):
         form = AdminDirectorForm(instance=director)
     return render(request, 'admin-panel/director_form.html', {'form': form, 'title': 'Edit director'})
 
-
-# --- Actors ---
 
 @login_required
 def admin_actors_view(request):
