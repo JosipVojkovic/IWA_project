@@ -90,12 +90,6 @@
 								alt="{{ movie.title }}"
 								style="width: 56px; height: 80px; object-fit: cover; border-radius: 10px"
 							/>
-							{% elif movie.poster %}
-							<img
-								src="{{ movie.poster.url }}"
-								alt="{{ movie.title }}"
-								style="width: 56px; height: 80px; object-fit: cover; border-radius: 10px"
-							/>
 							{% else %}
 							<div
 								class="d-flex align-items-center justify-content-center text-uppercase muted small"

@@ -195,8 +195,7 @@ def admin_movies_view(request):
     stats = {
         'total_movies': Movie.objects.count(),
         'with_posters': Movie.objects.filter(
-            (Q(poster__isnull=False) & ~Q(poster=''))
-            | (Q(poster_url__isnull=False) & ~Q(poster_url=''))
+            Q(poster_url__isnull=False) & ~Q(poster_url='')
         ).count(),
         'with_release_date': Movie.objects.filter(release_date__isnull=False).count(),
     }

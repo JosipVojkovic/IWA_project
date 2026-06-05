@@ -54,8 +54,6 @@
           <div class="movie-card">
             {% if movie.poster_url %}
             <img src="{{ movie.poster_url }}" class="movie-poster" alt="{{ movie.title }}" />
-            {% elif movie.poster %}
-            <img src="{{ movie.poster.url }}" class="movie-poster" alt="{{ movie.title }}" />
             {% else %}
             <div class="movie-poster-placeholder">🎬</div>
             {% endif %}
