@@ -1,5 +1,4 @@
 {% extends "admin-panel/base.html" %}
-
 {% block title %}Admin Users{% endblock %}
 {% block nav_users_active %}active{% endblock %}
 
@@ -9,17 +8,7 @@
     <h1 class="h3 mb-1">Users</h1>
     <p class="muted mb-0">Review accounts, permissions, and recent activity in one place.</p>
   </div>
-  <div class="d-flex flex-wrap gap-2">
-    <button
-      id="addUserBtn"
-      class="btn btn-primary"
-      type="button"
-      data-bs-toggle="modal"
-      data-bs-target="#addUserModal"
-    >
-      Add user
-    </button>
-  </div>
+  <a href="{% url 'admin_user_create' %}" class="btn btn-primary">Add user</a>
 </div>
 
 <div class="row g-3 mb-4">
@@ -55,15 +44,8 @@
       <h2 class="h5 mb-1">Account directory</h2>
       <p class="muted mb-0">Search usernames and emails.</p>
     </div>
-
     <form class="d-flex gap-2 w-lg-auto" method="get">
-      <input
-        type="search"
-        class="form-control"
-        name="q"
-        value="{{ search_query }}"
-        placeholder="Search users"
-      />
+      <input type="search" class="form-control" name="q" value="{{ search_query }}" placeholder="Search users" />
       <button class="btn btn-outline-primary" type="submit">Search</button>
     </form>
   </div>
@@ -95,9 +77,7 @@
               </div>
             </div>
           </td>
-          <td>
-            <span class="muted">{{ account.email|default:"No email" }}</span>
-          </td>
+          <td><span class="muted">{{ account.email|default:"No email" }}</span></td>
           <td>
             {% if account.is_superuser %}
             <span class="badge text-bg-dark">Superuser</span>
@@ -116,29 +96,10 @@
           </td>
           <td class="muted">{{ account.date_joined|date:"M d, Y" }}</td>
           <td class="muted">
-            {% if account.last_login %}
-              {{ account.last_login|date:"M d, Y H:i" }}
-            {% else %}
-              Never
-            {% endif %}
+            {% if account.last_login %}{{ account.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}
           </td>
           <td class="text-end">
-            <div class="d-inline-flex gap-2">
-              <button
-                class="btn btn-sm btn-outline-secondary user-edit-btn"
-                type="button"
-                data-bs-toggle="modal"
-                data-bs-target="#addUserModal"
-                data-user-id="{{ account.id }}"
-                data-username="{{ account.username|escape }}"
-                data-email="{{ account.email|default_if_none:''|escape }}"
-                data-is-staff="{{ account.is_staff|yesno:'true,false' }}"
-                data-is-superuser="{{ account.is_superuser|yesno:'true,false' }}"
-                data-is-active="{{ account.is_active|yesno:'true,false' }}"
-              >
-                Edit
-              </button>
-            </div>
+            <a href="{% url 'admin_user_edit' account.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
           </td>
         </tr>
         {% empty %}
@@ -152,286 +113,4 @@
     </table>
   </div>
 </div>
-
-<div
-  class="modal fade"
-  id="addUserModal"
-  tabindex="-1"
-  aria-labelledby="addUserModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addUserModalLabel">Add user</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <form method="post" action="{% url 'admin_users' %}">
-        {% csrf_token %}
-        <input type="hidden" name="user_id" id="userId" value="{{ create_form.data.user_id|default_if_none:'' }}" />
-        <div class="modal-body">
-          {% if create_form.errors %}
-          <div class="alert alert-danger mb-3">
-            <div class="fw-semibold mb-1">Please fix the errors below.</div>
-            <ul class="mb-0 ps-3">
-              {% for field in create_form %}
-                {% for error in field.errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              {% endfor %}
-              {% for error in create_form.non_field_errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="new-username">Username</label>
-              <input
-                class="form-control"
-                id="new-username"
-                name="username"
-                type="text"
-                value="{{ create_form.data.username|default_if_none:'' }}"
-                required
-              />
-            </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="new-email">Email</label>
-              <input
-                class="form-control"
-                id="new-email"
-                name="email"
-                type="email"
-                value="{{ create_form.data.email|default_if_none:'' }}"
-                required
-              />
-            </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="new-password">Password</label>
-              <input
-                class="form-control"
-                id="new-password"
-                name="password1"
-                type="password"
-                required
-              />
-            </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="new-password-confirm">
-                Confirm password
-              </label>
-              <input
-                class="form-control"
-                id="new-password-confirm"
-                name="password2"
-                type="password"
-                required
-              />
-            </div>
-            <div class="col-12">
-              <div class="d-flex flex-wrap gap-3">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="new-staff"
-                    name="is_staff"
-                    {% if create_form.is_bound and create_form.data.is_staff %}checked{% endif %}
-                  />
-                  <label class="form-check-label" for="new-staff">
-                    Staff access
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="new-superuser"
-                    name="is_superuser"
-                    {% if create_form.is_bound and create_form.data.is_superuser %}checked{% endif %}
-                  />
-                  <label class="form-check-label" for="new-superuser">
-                    Superuser
-                  </label>
-                </div>
-                <div class="form-check form-switch">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="new-active"
-                    name="is_active"
-                    {% if create_form.is_bound %}
-                      {% if create_form.data.is_active %}checked{% endif %}
-                    {% else %}
-                      checked
-                    {% endif %}
-                  />
-                  <label class="form-check-label" for="new-active">
-                    Active
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div class="col-12">
-              <label class="form-label" for="new-notes">Notes</label>
-              <textarea
-                class="form-control"
-                id="new-notes"
-                name="notes"
-                rows="3"
-                placeholder="Optional internal note"
-              >{{ create_form.data.notes|default_if_none:'' }}</textarea>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" id="userSubmitBtn">Create user</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-{% if create_form.errors %}
-<script>
-  window.addEventListener("load", function () {
-    var modalElement = document.getElementById("addUserModal");
-    if (modalElement) {
-      var modal = new bootstrap.Modal(modalElement);
-      modal.show();
-    }
-  });
-</script>
-{% endif %}
-<script>
-  window.addEventListener("load", function () {
-    var addUserBtn = document.getElementById("addUserBtn");
-    var modalLabel = document.getElementById("addUserModalLabel");
-    var submitBtn = document.getElementById("userSubmitBtn");
-    var userIdInput = document.getElementById("userId");
-    var usernameInput = document.getElementById("new-username");
-    var emailInput = document.getElementById("new-email");
-    var passwordInput = document.getElementById("new-password");
-    var passwordConfirmInput = document.getElementById("new-password-confirm");
-    var staffInput = document.getElementById("new-staff");
-    var superuserInput = document.getElementById("new-superuser");
-    var activeInput = document.getElementById("new-active");
-    var notesInput = document.getElementById("new-notes");
-
-    function setPasswordRequired(required) {
-      if (passwordInput) {
-        passwordInput.required = required;
-      }
-      if (passwordConfirmInput) {
-        passwordConfirmInput.required = required;
-      }
-    }
-
-    function resetForm() {
-      if (userIdInput) {
-        userIdInput.value = "";
-      }
-      if (usernameInput) {
-        usernameInput.value = "";
-      }
-      if (emailInput) {
-        emailInput.value = "";
-      }
-      if (passwordInput) {
-        passwordInput.value = "";
-      }
-      if (passwordConfirmInput) {
-        passwordConfirmInput.value = "";
-      }
-      if (staffInput) {
-        staffInput.checked = false;
-      }
-      if (superuserInput) {
-        superuserInput.checked = false;
-      }
-      if (activeInput) {
-        activeInput.checked = true;
-      }
-      if (notesInput) {
-        notesInput.value = "";
-      }
-      if (modalLabel) {
-        modalLabel.textContent = "Add user";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Create user";
-      }
-      setPasswordRequired(true);
-    }
-
-    function setEditMode(button) {
-      if (!button) {
-        return;
-      }
-      if (userIdInput) {
-        userIdInput.value = button.getAttribute("data-user-id") || "";
-      }
-      if (usernameInput) {
-        usernameInput.value = button.getAttribute("data-username") || "";
-      }
-      if (emailInput) {
-        emailInput.value = button.getAttribute("data-email") || "";
-      }
-      if (staffInput) {
-        staffInput.checked = button.getAttribute("data-is-staff") === "true";
-      }
-      if (superuserInput) {
-        superuserInput.checked = button.getAttribute("data-is-superuser") === "true";
-      }
-      if (activeInput) {
-        activeInput.checked = button.getAttribute("data-is-active") === "true";
-      }
-      if (passwordInput) {
-        passwordInput.value = "";
-      }
-      if (passwordConfirmInput) {
-        passwordConfirmInput.value = "";
-      }
-      if (notesInput) {
-        notesInput.value = "";
-      }
-      if (modalLabel) {
-        modalLabel.textContent = "Edit user";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Save changes";
-      }
-      setPasswordRequired(false);
-    }
-
-    if (addUserBtn) {
-      addUserBtn.addEventListener("click", function () {
-        resetForm();
-      });
-    }
-
-    document.querySelectorAll(".user-edit-btn").forEach(function (button) {
-      button.addEventListener("click", function () {
-        setEditMode(button);
-      });
-    });
-
-    if (userIdInput && userIdInput.value) {
-      if (modalLabel) {
-        modalLabel.textContent = "Edit user";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Save changes";
-      }
-      setPasswordRequired(false);
-    }
-  });
-</script>
 {% endblock %}

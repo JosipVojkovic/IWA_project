@@ -1,27 +1,14 @@
 {% extends "admin-panel/base.html" %}
-
 {% block title %}Admin Directors{% endblock %}
 {% block nav_directors_active %}active{% endblock %}
 
 {% block content %}
-<div
-  class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4"
->
+<div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
   <div>
     <h1 class="h3 mb-1">Directors</h1>
     <p class="muted mb-0">Track your directors and their movie counts.</p>
   </div>
-  <div class="d-flex flex-wrap gap-2">
-    <button
-      id="addDirectorBtn"
-      class="btn btn-primary"
-      type="button"
-      data-bs-toggle="modal"
-      data-bs-target="#addDirectorModal"
-    >
-      Add director
-    </button>
-  </div>
+  <a href="{% url 'admin_director_create' %}" class="btn btn-primary">Add director</a>
 </div>
 
 <div class="row g-3 mb-4">
@@ -46,22 +33,13 @@
 </div>
 
 <div class="table-card p-4">
-  <div
-    class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4"
-  >
+  <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
     <div>
       <h2 class="h5 mb-1">Director list</h2>
       <p class="muted mb-0">Search names.</p>
     </div>
-
     <form class="d-flex gap-2 w-lg-auto" method="get">
-      <input
-        type="search"
-        class="form-control"
-        name="q"
-        value="{{ search_query }}"
-        placeholder="Search directors"
-      />
+      <input type="search" class="form-control" name="q" value="{{ search_query }}" placeholder="Search directors" />
       <button class="btn btn-outline-primary" type="submit">Search</button>
     </form>
   </div>
@@ -91,27 +69,12 @@
             </div>
           </td>
           <td class="muted">
-            {% if director.birth_date %}
-              {{ director.birth_date|date:"M d, Y" }}
-            {% else %}
-              Unknown
-            {% endif %}
+            {% if director.birth_date %}{{ director.birth_date|date:"M d, Y" }}{% else %}Unknown{% endif %}
           </td>
           <td class="muted">{{ director.movie_count }}</td>
           <td class="text-end">
             <div class="d-inline-flex gap-2">
-              <button
-                class="btn btn-sm btn-outline-secondary director-edit-btn"
-                type="button"
-                data-bs-toggle="modal"
-                data-bs-target="#addDirectorModal"
-                data-director-id="{{ director.id }}"
-                data-first-name="{{ director.first_name|escape }}"
-                data-last-name="{{ director.last_name|escape }}"
-                data-birth-date="{% if director.birth_date %}{{ director.birth_date|date:'Y-m-d' }}{% endif %}"
-              >
-                Edit
-              </button>
+              <a href="{% url 'admin_director_edit' director.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
               <form method="post" action="{% url 'admin_directors' %}" onsubmit="return confirm('Delete {{ director.first_name|escapejs }} {{ director.last_name|escapejs }}? This will also delete all their movies.')">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="delete" />
@@ -132,173 +95,4 @@
     </table>
   </div>
 </div>
-
-<div
-  class="modal fade"
-  id="addDirectorModal"
-  tabindex="-1"
-  aria-labelledby="addDirectorModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addDirectorModalLabel">Add director</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <form method="post" action="{% url 'admin_directors' %}">
-        {% csrf_token %}
-        <input type="hidden" name="director_id" id="directorId" value="{{ create_form.data.director_id|default_if_none:'' }}" />
-        <div class="modal-body">
-          {% if create_form.errors %}
-          <div class="alert alert-danger mb-3">
-            <div class="fw-semibold mb-1">Please fix the errors below.</div>
-            <ul class="mb-0 ps-3">
-              {% for field in create_form %}
-                {% for error in field.errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              {% endfor %}
-              {% for error in create_form.non_field_errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="directorFirstName">First name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="directorFirstName"
-                name="first_name"
-                value="{{ create_form.data.first_name|default_if_none:'' }}"
-                required
-              />
-            </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="directorLastName">Last name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="directorLastName"
-                name="last_name"
-                value="{{ create_form.data.last_name|default_if_none:'' }}"
-                required
-              />
-            </div>
-            <div class="col-12">
-              <label class="form-label" for="directorBirthDate">Birth date</label>
-              <input
-                type="date"
-                class="form-control"
-                id="directorBirthDate"
-                name="birth_date"
-                value="{{ create_form.data.birth_date|default_if_none:'' }}"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" id="directorSubmitBtn">Save director</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-{% if create_form.errors %}
-<script>
-  window.addEventListener("load", function () {
-    var modalElement = document.getElementById("addDirectorModal");
-    if (modalElement) {
-      var modal = new bootstrap.Modal(modalElement);
-      modal.show();
-    }
-  });
-</script>
-{% endif %}
-<script>
-  window.addEventListener("load", function () {
-    var addDirectorBtn = document.getElementById("addDirectorBtn");
-    var modalLabel = document.getElementById("addDirectorModalLabel");
-    var submitBtn = document.getElementById("directorSubmitBtn");
-    var directorIdInput = document.getElementById("directorId");
-    var firstNameInput = document.getElementById("directorFirstName");
-    var lastNameInput = document.getElementById("directorLastName");
-    var birthDateInput = document.getElementById("directorBirthDate");
-
-    function resetForm() {
-      if (directorIdInput) {
-        directorIdInput.value = "";
-      }
-      if (firstNameInput) {
-        firstNameInput.value = "";
-      }
-      if (lastNameInput) {
-        lastNameInput.value = "";
-      }
-      if (birthDateInput) {
-        birthDateInput.value = "";
-      }
-      if (modalLabel) {
-        modalLabel.textContent = "Add director";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Save director";
-      }
-    }
-
-    function setEditMode(button) {
-      if (!button) {
-        return;
-      }
-      if (directorIdInput) {
-        directorIdInput.value = button.getAttribute("data-director-id") || "";
-      }
-      if (firstNameInput) {
-        firstNameInput.value = button.getAttribute("data-first-name") || "";
-      }
-      if (lastNameInput) {
-        lastNameInput.value = button.getAttribute("data-last-name") || "";
-      }
-      if (birthDateInput) {
-        birthDateInput.value = button.getAttribute("data-birth-date") || "";
-      }
-      if (modalLabel) {
-        modalLabel.textContent = "Edit director";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Save changes";
-      }
-    }
-
-    if (addDirectorBtn) {
-      addDirectorBtn.addEventListener("click", function () {
-        resetForm();
-      });
-    }
-
-    document.querySelectorAll(".director-edit-btn").forEach(function (button) {
-      button.addEventListener("click", function () {
-        setEditMode(button);
-      });
-    });
-
-    if (directorIdInput && directorIdInput.value) {
-      if (modalLabel) {
-        modalLabel.textContent = "Edit director";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Save changes";
-      }
-    }
-  });
-</script>
 {% endblock %}

@@ -1,534 +1,104 @@
 {% extends "admin-panel/base.html" %}
-
 {% block title %}Admin Movies{% endblock %}
 {% block nav_movies_active %}active{% endblock %}
 
 {% block content %}
-<div
-	class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4"
->
-	<div>
-		<h1 class="h3 mb-1">Movies</h1>
-		<p class="muted mb-0">Review your titles, metadata, and release info.</p>
-	</div>
-	<div class="d-flex flex-wrap gap-2">
-		<button
-			id="addMovieBtn"
-			class="btn btn-primary"
-			type="button"
-			data-bs-toggle="modal"
-			data-bs-target="#addMovieModal"
-		>
-			Add movie
-		</button>
-	</div>
+<div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1">Movies</h1>
+    <p class="muted mb-0">Review your titles, metadata, and release info.</p>
+  </div>
+  <a href="{% url 'admin_movie_create' %}" class="btn btn-primary">Add movie</a>
 </div>
 
 <div class="row g-3 mb-4">
-	<div class="col-12 col-md-4">
-		<div class="stat-card p-3 h-100">
-			<p class="muted small mb-1">Total movies</p>
-			<h2 class="h3 mb-0">{{ stats.total_movies }}</h2>
-		</div>
-	</div>
-	<div class="col-12 col-md-4">
-		<div class="stat-card p-3 h-100">
-			<p class="muted small mb-1">With posters</p>
-			<h2 class="h3 mb-0">{{ stats.with_posters }}</h2>
-		</div>
-	</div>
-	<div class="col-12 col-md-4">
-		<div class="stat-card p-3 h-100">
-			<p class="muted small mb-1">Release dates set</p>
-			<h2 class="h3 mb-0">{{ stats.with_release_date }}</h2>
-		</div>
-	</div>
+  <div class="col-12 col-md-4">
+    <div class="stat-card p-3 h-100">
+      <p class="muted small mb-1">Total movies</p>
+      <h2 class="h3 mb-0">{{ stats.total_movies }}</h2>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="stat-card p-3 h-100">
+      <p class="muted small mb-1">With posters</p>
+      <h2 class="h3 mb-0">{{ stats.with_posters }}</h2>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="stat-card p-3 h-100">
+      <p class="muted small mb-1">Release dates set</p>
+      <h2 class="h3 mb-0">{{ stats.with_release_date }}</h2>
+    </div>
+  </div>
 </div>
 
 <div class="table-card p-4">
-	<div
-		class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4"
-	>
-		<div>
-			<h2 class="h5 mb-1">Movie library</h2>
-			<p class="muted mb-0">Search titles, genres, or directors.</p>
-		</div>
+  <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4">
+    <div>
+      <h2 class="h5 mb-1">Movie library</h2>
+      <p class="muted mb-0">Search titles, genres, or directors.</p>
+    </div>
+    <form class="d-flex gap-2 w-lg-auto" method="get">
+      <input type="search" class="form-control" name="q" value="{{ search_query }}" placeholder="Search movies" />
+      <button class="btn btn-outline-primary" type="submit">Search</button>
+    </form>
+  </div>
 
-		<form class="d-flex gap-2 w-lg-auto" method="get">
-			<input
-				type="search"
-				class="form-control"
-				name="q"
-				value="{{ search_query }}"
-				placeholder="Search movies"
-			/>
-			<button class="btn btn-outline-primary" type="submit">Search</button>
-		</form>
-	</div>
-
-	<div class="table-responsive">
-		<table class="table align-middle mb-0">
-			<thead>
-				<tr class="text-uppercase muted small">
-					<th scope="col">Movie</th>
-					<th scope="col">Genre</th>
-					<th scope="col">Director</th>
-					<th scope="col">Release</th>
-					<th scope="col">Duration</th>
-					<th scope="col">Cast</th>
-					<th scope="col" class="text-end">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for movie in movies %}
-				<tr>
-					<td>
-						<div class="d-flex align-items-center gap-3">
-							{% if movie.poster_url %}
-							<img
-								src="{{ movie.poster_url }}"
-								alt="{{ movie.title }}"
-								style="width: 56px; height: 80px; object-fit: cover; border-radius: 10px"
-							/>
-							{% else %}
-							<div
-								class="d-flex align-items-center justify-content-center text-uppercase muted small"
-								style="width: 56px; height: 80px; border-radius: 10px; background: #e5e7eb"
-							>
-								No
-							</div>
-							{% endif %}
-							<div>
-								<div class="fw-semibold">{{ movie.title }}</div>
-								<div class="muted small">ID {{ movie.id }}</div>
-							</div>
-						</div>
-					</td>
-					<td class="muted">{{ movie.genre|default:"Uncategorized" }}</td>
-					<td class="muted">{{ movie.director|default:"Unknown" }}</td>
-					<td class="muted">
-						{% if movie.release_date %}
-							{{ movie.release_date|date:"M d, Y" }}
-						{% else %}
-							TBD
-						{% endif %}
-					</td>
-					<td class="muted">
-						{% if movie.duration %}
-							{{ movie.duration }} min
-						{% else %}
-							-
-						{% endif %}
-					</td>
-					  <td class="muted">{{ movie.actors.all|length }}</td>
-					<td class="text-end">
-						<div class="d-inline-flex gap-2">
-							<button
-								class="btn btn-sm btn-outline-secondary movie-edit-btn"
-								type="button"
-								data-bs-toggle="modal"
-								data-bs-target="#addMovieModal"
-								data-movie-id="{{ movie.id }}"
-								data-title="{{ movie.title|escape }}"
-								data-description="{{ movie.description|default_if_none:''|escape }}"
-								data-release-date="{% if movie.release_date %}{{ movie.release_date|date:'Y-m-d' }}{% endif %}"
-								data-duration="{{ movie.duration|default_if_none:'' }}"
-								data-genre="{{ movie.genre|default_if_none:'' }}"
-								data-director-id="{{ movie.director.id|default_if_none:'' }}"
-								data-poster-url="{{ movie.poster_url|default_if_none:''|escape }}"
-								data-actor-ids="{% for actor in movie.actors.all %}{{ actor.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
-							>
-								Edit
-							</button>
-							<form method="post" action="{% url 'admin_movies' %}" onsubmit="return confirm('Delete {{ movie.title|escapejs }}?')">
-								{% csrf_token %}
-								<input type="hidden" name="action" value="delete" />
-								<input type="hidden" name="movie_id" value="{{ movie.id }}" />
-								<button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-							</form>
-						</div>
-					</td>
-				</tr>
-				{% empty %}
-				<tr>
-					<td colspan="7" class="py-5 text-center">
-						<div class="muted mb-2">No movies match this search.</div>
-					</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr class="text-uppercase muted small">
+          <th scope="col">Movie</th>
+          <th scope="col">Genre</th>
+          <th scope="col">Director</th>
+          <th scope="col">Release</th>
+          <th scope="col">Duration</th>
+          <th scope="col">Cast</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movie in movies %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              {% if movie.poster_url %}
+              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" style="width: 56px; height: 80px; object-fit: cover; border-radius: 10px" />
+              {% else %}
+              <div class="d-flex align-items-center justify-content-center text-uppercase muted small" style="width: 56px; height: 80px; border-radius: 10px; background: #e5e7eb">No</div>
+              {% endif %}
+              <div>
+                <div class="fw-semibold">{{ movie.title }}</div>
+                <div class="muted small">ID {{ movie.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="muted">{{ movie.genre|default:"Uncategorized" }}</td>
+          <td class="muted">{{ movie.director|default:"Unknown" }}</td>
+          <td class="muted">{% if movie.release_date %}{{ movie.release_date|date:"M d, Y" }}{% else %}TBD{% endif %}</td>
+          <td class="muted">{% if movie.duration %}{{ movie.duration }} min{% else %}-{% endif %}</td>
+          <td class="muted">{{ movie.actors.all|length }}</td>
+          <td class="text-end">
+            <div class="d-inline-flex gap-2">
+              <a href="{% url 'admin_movie_edit' movie.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+              <form method="post" action="{% url 'admin_movies' %}" onsubmit="return confirm('Delete {{ movie.title|escapejs }}?')">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete" />
+                <input type="hidden" name="movie_id" value="{{ movie.id }}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="py-5 text-center">
+            <div class="muted mb-2">No movies match this search.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
-
-<div
-	class="modal fade"
-	id="addMovieModal"
-	tabindex="-1"
-	aria-labelledby="addMovieModalLabel"
-	aria-hidden="true"
->
-	<div class="modal-dialog modal-lg modal-dialog-centered">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="addMovieModalLabel">Add new movie</h5>
-				<button
-					type="button"
-					class="btn-close"
-					data-bs-dismiss="modal"
-					aria-label="Close"
-				></button>
-			</div>
-			<form method="post" action="{% url 'admin_movies' %}">
-				{% csrf_token %}
-				<input type="hidden" name="movie_id" id="movieId" value="{{ create_form.data.movie_id|default_if_none:'' }}" />
-				<div class="modal-body">
-					{% if create_form.errors %}
-					<div class="alert alert-danger mb-3">
-						<div class="fw-semibold mb-1">Please fix the errors below.</div>
-						<ul class="mb-0 ps-3">
-							{% for field in create_form %}
-								{% for error in field.errors %}
-									<li>{{ error }}</li>
-								{% endfor %}
-							{% endfor %}
-							{% for error in create_form.non_field_errors %}
-								<li>{{ error }}</li>
-							{% endfor %}
-						</ul>
-					</div>
-					{% endif %}
-					<div class="row g-3">
-						<div class="col-12 col-lg-7">
-							<label class="form-label" for="movieTitle">Title</label>
-							<input
-								type="text"
-								class="form-control"
-								id="movieTitle"
-								name="title"
-								placeholder="Movie title"
-								value="{{ create_form.data.title|default_if_none:'' }}"
-								required
-							/>
-						</div>
-						<div class="col-12 col-lg-5">
-							<label class="form-label" for="movieRelease">Release date</label>
-							<input
-								type="date"
-								class="form-control"
-								id="movieRelease"
-								name="release_date"
-								value="{{ create_form.data.release_date|default_if_none:'' }}"
-							/>
-						</div>
-						<div class="col-12 col-lg-4">
-							<label class="form-label" for="movieDuration">Duration</label>
-							<div class="input-group">
-								<input
-									type="number"
-									class="form-control"
-									id="movieDuration"
-									name="duration"
-									min="1"
-									placeholder="120"
-									value="{{ create_form.data.duration|default_if_none:'' }}"
-								/>
-								<span class="input-group-text">min</span>
-							</div>
-						</div>
-						<div class="col-12 col-lg-4">
-							<label class="form-label" for="movieGenre">Genre</label>
-							<select class="form-select" id="movieGenre" name="genre">
-								<option value="">Select genre</option>
-								{% for value, label in genres %}
-								<option
-									value="{{ value }}"
-									{% if create_form.is_bound and create_form.data.genre == value %}selected{% endif %}
-								>
-									{{ label }}
-								</option>
-								{% endfor %}
-							</select>
-						</div>
-						<div class="col-12 col-lg-4">
-							<label class="form-label" for="movieDirector">Director</label>
-							<select
-								class="form-select"
-								id="movieDirector"
-								name="director"
-								required
-							>
-								<option value="">Select director</option>
-								{% for director in directors %}
-								<option
-									value="{{ director.id }}"
-									{% if director.id|stringformat:"s" == selected_director_id %}selected{% endif %}
-								>
-									{{ director.first_name }} {{ director.last_name }}
-								</option>
-								{% endfor %}
-							</select>
-							<div class="form-text">Choose from existing directors.</div>
-						</div>
-						<div class="col-12">
-							<label class="form-label" for="movieActors">Cast</label>
-							<div class="d-flex flex-wrap gap-2 align-items-center">
-								<select class="form-select w-auto" id="movieActorsSelect">
-									<option value="">Select actor</option>
-									{% for actor in actors %}
-									<option value="{{ actor.id }}">
-										{{ actor.first_name }} {{ actor.last_name }}
-									</option>
-									{% endfor %}
-								</select>
-								<button type="button" class="btn btn-outline-secondary btn-sm" id="addActorBtn">
-									Add actor
-								</button>
-							</div>
-							<div class="form-text">Choose an actor, then click Add.</div>
-							<div class="d-flex flex-wrap gap-2 mt-2" id="actorPills">
-								{% for actor in actors %}
-									{% if actor.id|stringformat:"s" in selected_actor_ids %}
-									<span class="badge text-bg-primary d-inline-flex align-items-center gap-1" data-actor-id="{{ actor.id }}">
-										{{ actor.first_name }} {{ actor.last_name }}
-										<button
-											type="button"
-											class="btn btn-sm btn-link text-white text-decoration-none p-0"
-											aria-label="Remove actor"
-											data-remove-actor="{{ actor.id }}"
-										>
-											&times;
-										</button>
-										<input type="hidden" name="actors" value="{{ actor.id }}" />
-									</span>
-									{% endif %}
-								{% endfor %}
-							</div>
-						</div>
-						<div class="col-12">
-							<label class="form-label" for="movieDescription">Synopsis</label>
-							<textarea
-								class="form-control"
-								id="movieDescription"
-								name="description"
-								rows="4"
-								placeholder="Short description of the movie"
-							>{{ create_form.data.description|default_if_none:'' }}</textarea>
-						</div>
-						<div class="col-12">
-							<label class="form-label" for="moviePoster">Poster URL</label>
-							<input
-								type="url"
-								class="form-control"
-								id="moviePoster"
-								name="poster_url"
-								placeholder="https://example.com/poster.jpg"
-								value="{{ create_form.data.poster_url|default_if_none:'' }}"
-							/>
-							<div class="form-text">Paste a direct image link (JPG or PNG).</div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary" id="movieSubmitBtn">Save movie</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-{% if create_form.errors %}
-<script>
-	window.addEventListener("load", function () {
-		var modalElement = document.getElementById("addMovieModal");
-		if (modalElement) {
-			var modal = new bootstrap.Modal(modalElement);
-			modal.show();
-		}
-	});
-</script>
-{% endif %}
-<script>
-	window.addEventListener("load", function () {
-		var select = document.getElementById("movieActorsSelect");
-		var addBtn = document.getElementById("addActorBtn");
-		var pills = document.getElementById("actorPills");
-		var addMovieBtn = document.getElementById("addMovieBtn");
-		var modalLabel = document.getElementById("addMovieModalLabel");
-		var submitBtn = document.getElementById("movieSubmitBtn");
-		var movieIdInput = document.getElementById("movieId");
-		var titleInput = document.getElementById("movieTitle");
-		var releaseInput = document.getElementById("movieRelease");
-		var durationInput = document.getElementById("movieDuration");
-		var genreSelect = document.getElementById("movieGenre");
-		var directorSelect = document.getElementById("movieDirector");
-		var descriptionInput = document.getElementById("movieDescription");
-		var posterInput = document.getElementById("moviePoster");
-		if (!select || !addBtn || !pills) {
-			return;
-		}
-
-		var existing = new Set();
-
-		function rebuildExisting() {
-			existing.clear();
-			pills.querySelectorAll("[data-actor-id]").forEach(function (pill) {
-				existing.add(pill.getAttribute("data-actor-id"));
-			});
-		}
-
-		function clearActorPills() {
-			pills.innerHTML = "";
-			existing.clear();
-		}
-
-		function addActorPill(actorId) {
-			if (!actorId || existing.has(actorId)) {
-				return;
-			}
-			var option = select.querySelector("option[value='" + actorId + "']");
-			if (!option) {
-				return;
-			}
-			var actorName = option.text;
-			var pill = document.createElement("span");
-			pill.className = "badge text-bg-primary d-inline-flex align-items-center gap-1";
-			pill.setAttribute("data-actor-id", actorId);
-			pill.innerHTML =
-				actorName +
-				" <button type=\"button\" class=\"btn btn-sm btn-link text-white text-decoration-none p-0\" aria-label=\"Remove actor\" data-remove-actor=\"" +
-				actorId +
-				"\">&times;</button>" +
-				"<input type=\"hidden\" name=\"actors\" value=\"" +
-				actorId +
-				"\" />";
-			pills.appendChild(pill);
-			existing.add(actorId);
-		}
-
-		function resetMovieForm() {
-			if (movieIdInput) {
-				movieIdInput.value = "";
-			}
-			if (titleInput) {
-				titleInput.value = "";
-			}
-			if (releaseInput) {
-				releaseInput.value = "";
-			}
-			if (durationInput) {
-				durationInput.value = "";
-			}
-			if (genreSelect) {
-				genreSelect.value = "";
-			}
-			if (directorSelect) {
-				directorSelect.value = "";
-			}
-			if (descriptionInput) {
-				descriptionInput.value = "";
-			}
-			if (posterInput) {
-				posterInput.value = "";
-			}
-			clearActorPills();
-			if (modalLabel) {
-				modalLabel.textContent = "Add new movie";
-			}
-			if (submitBtn) {
-				submitBtn.textContent = "Save movie";
-			}
-		}
-
-		function populateFromButton(button) {
-			if (!button) {
-				return;
-			}
-			if (movieIdInput) {
-				movieIdInput.value = button.getAttribute("data-movie-id") || "";
-			}
-			if (titleInput) {
-				titleInput.value = button.getAttribute("data-title") || "";
-			}
-			if (releaseInput) {
-				releaseInput.value = button.getAttribute("data-release-date") || "";
-			}
-			if (durationInput) {
-				durationInput.value = button.getAttribute("data-duration") || "";
-			}
-			if (genreSelect) {
-				genreSelect.value = button.getAttribute("data-genre") || "";
-			}
-			if (directorSelect) {
-				directorSelect.value = button.getAttribute("data-director-id") || "";
-			}
-			if (descriptionInput) {
-				descriptionInput.value = button.getAttribute("data-description") || "";
-			}
-			if (posterInput) {
-				posterInput.value = button.getAttribute("data-poster-url") || "";
-			}
-			clearActorPills();
-			var actorIdsRaw = button.getAttribute("data-actor-ids") || "";
-			actorIdsRaw.split(",").forEach(function (actorId) {
-				var trimmed = actorId.trim();
-				if (trimmed) {
-					addActorPill(trimmed);
-				}
-			});
-			if (modalLabel) {
-				modalLabel.textContent = "Edit movie";
-			}
-			if (submitBtn) {
-				submitBtn.textContent = "Save changes";
-			}
-		}
-
-		rebuildExisting();
-
-		if (movieIdInput && movieIdInput.value) {
-			if (modalLabel) {
-				modalLabel.textContent = "Edit movie";
-			}
-			if (submitBtn) {
-				submitBtn.textContent = "Save changes";
-			}
-		}
-
-		if (addMovieBtn) {
-			addMovieBtn.addEventListener("click", function () {
-				resetMovieForm();
-			});
-		}
-
-		var editButtons = document.querySelectorAll(".movie-edit-btn");
-		editButtons.forEach(function (button) {
-			button.addEventListener("click", function () {
-				populateFromButton(button);
-			});
-		});
-
-		addBtn.addEventListener("click", function () {
-			var actorId = select.value;
-			if (!actorId || existing.has(actorId)) {
-				return;
-			}
-			addActorPill(actorId);
-			select.value = "";
-		});
-
-		pills.addEventListener("click", function (event) {
-			var target = event.target;
-			if (!target || !target.hasAttribute("data-remove-actor")) {
-				return;
-			}
-			var actorId = target.getAttribute("data-remove-actor");
-			var pill = pills.querySelector("[data-actor-id='" + actorId + "']");
-			if (pill) {
-				pill.remove();
-			}
-			existing.delete(actorId);
-		});
-	});
-</script>
 {% endblock %}

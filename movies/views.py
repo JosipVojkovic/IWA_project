@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -15,6 +15,7 @@ from .forms import (
     AdminActorForm,
 )
 
+
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('movie_list')
@@ -27,6 +28,7 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
+
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -41,9 +43,11 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
+
 def logout_view(request):
     logout(request)
     return redirect('login')
+
 
 @login_required
 def movie_list(request):
@@ -63,6 +67,7 @@ def movie_list(request):
         'genre_query': genre_query,
         'genres': [g[0] for g in GENRE_CHOICES],
     })
+
 
 @login_required
 def admin_dashboard_view(request):
@@ -85,101 +90,91 @@ def admin_dashboard_view(request):
         },
     )
 
+
+# --- Users ---
+
 @login_required
 def admin_users_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
-
     User = get_user_model()
     search_query = request.GET.get('q', '').strip()
-    create_form = AdminUserCreationForm()
-
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        if user_id:
-            user_instance = User.objects.filter(id=user_id).first()
-            create_form = AdminUserUpdateForm(request.POST, instance=user_instance)
-            if user_instance and create_form.is_valid():
-                user = create_form.save(commit=False)
-                if user.is_superuser:
-                    user.is_staff = True
-                user.save()
-                return redirect('admin_users')
-            if not user_instance:
-                create_form.add_error(None, "User not found.")
-        else:
-            create_form = AdminUserCreationForm(request.POST)
-            if create_form.is_valid():
-                user = create_form.save(commit=False)
-                user.is_staff = create_form.cleaned_data['is_staff']
-                user.is_superuser = create_form.cleaned_data['is_superuser']
-                user.is_active = create_form.cleaned_data['is_active']
-                if user.is_superuser:
-                    user.is_staff = True
-                user.save()
-                return redirect('admin_users')
-
     users = User.objects.all().order_by('-date_joined')
     if search_query:
         users = users.filter(
             Q(username__icontains=search_query) | Q(email__icontains=search_query)
         )
-
     stats = {
         'total_users': User.objects.count(),
         'active_users': User.objects.filter(is_active=True).count(),
         'staff_users': User.objects.filter(is_staff=True).count(),
         'superusers': User.objects.filter(is_superuser=True).count(),
     }
+    return render(request, 'admin-panel/users.html', {
+        'users': users,
+        'stats': stats,
+        'search_query': search_query,
+    })
 
-    return render(
-        request,
-        'admin-panel/users.html',
-        {
-            'users': users,
-            'stats': stats,
-            'search_query': search_query,
-            'create_form': create_form,
-        },
-    )
+
+@login_required
+def admin_user_create_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    if request.method == 'POST':
+        form = AdminUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_staff = form.cleaned_data['is_staff']
+            user.is_superuser = form.cleaned_data['is_superuser']
+            user.is_active = form.cleaned_data['is_active']
+            if user.is_superuser:
+                user.is_staff = True
+            user.save()
+            return redirect('admin_users')
+    else:
+        form = AdminUserCreationForm()
+    return render(request, 'admin-panel/user_form.html', {'form': form, 'title': 'Add user', 'is_edit': False})
+
+
+@login_required
+def admin_user_edit_view(request, user_id):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    User = get_user_model()
+    user_instance = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        form = AdminUserUpdateForm(request.POST, instance=user_instance)
+        if form.is_valid():
+            user = form.save(commit=False)
+            if user.is_superuser:
+                user.is_staff = True
+            user.save()
+            return redirect('admin_users')
+    else:
+        form = AdminUserUpdateForm(instance=user_instance)
+    return render(request, 'admin-panel/user_form.html', {'form': form, 'title': 'Edit user', 'is_edit': True})
+
+
+# --- Movies ---
 
 @login_required
 def admin_movies_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
-
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        movie = Movie.objects.filter(id=request.POST.get('movie_id')).first()
+        if movie:
+            movie.delete()
+        return redirect('admin_movies')
     search_query = request.GET.get('q', '').strip()
-    create_form = AdminMovieForm()
-    selected_actor_ids = []
-    selected_director_id = ""
-
-    if request.method == 'POST':
-        if request.POST.get('action') == 'delete':
-            movie = Movie.objects.filter(id=request.POST.get('movie_id')).first()
-            if movie:
-                movie.delete()
-            return redirect('admin_movies')
-
-        movie_id = request.POST.get('movie_id')
-        movie_instance = Movie.objects.filter(id=movie_id).first() if movie_id else None
-        create_form = AdminMovieForm(request.POST, instance=movie_instance)
-        selected_actor_ids = request.POST.getlist('actors')
-        selected_director_id = request.POST.get('director', '')
-        if create_form.is_valid():
-            create_form.save()
-            return redirect('admin_movies')
-
-    movies = Movie.objects.select_related('director').prefetch_related(
-        'actors'
-    ).order_by('-release_date', 'title')
+    movies = Movie.objects.select_related('director').prefetch_related('actors').order_by('-release_date', 'title')
     if search_query:
         movies = movies.filter(
             Q(title__icontains=search_query)
-            | Q(genre__name__icontains=search_query)
             | Q(director__first_name__icontains=search_query)
             | Q(director__last_name__icontains=search_query)
         )
-
     stats = {
         'total_movies': Movie.objects.count(),
         'with_posters': Movie.objects.filter(
@@ -187,133 +182,153 @@ def admin_movies_view(request):
         ).count(),
         'with_release_date': Movie.objects.filter(release_date__isnull=False).count(),
     }
+    return render(request, 'admin-panel/movies.html', {
+        'movies': movies,
+        'stats': stats,
+        'search_query': search_query,
+    })
 
-    return render(
-        request,
-        'admin-panel/movies.html',
-        {
-            'movies': movies,
-            'stats': stats,
-            'search_query': search_query,
-            'create_form': create_form,
-            'genres': GENRE_CHOICES,
-            'actors': Actor.objects.order_by('last_name', 'first_name'),
-            'selected_actor_ids': selected_actor_ids,
-            'directors': Director.objects.order_by('last_name', 'first_name'),
-            'selected_director_id': selected_director_id,
-        },
-    )
+
+@login_required
+def admin_movie_create_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    if request.method == 'POST':
+        form = AdminMovieForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_movies')
+    else:
+        form = AdminMovieForm()
+    return render(request, 'admin-panel/movie_form.html', {'form': form, 'title': 'Add movie'})
+
+
+@login_required
+def admin_movie_edit_view(request, movie_id):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    movie = get_object_or_404(Movie, id=movie_id)
+    if request.method == 'POST':
+        form = AdminMovieForm(request.POST, instance=movie)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_movies')
+    else:
+        form = AdminMovieForm(instance=movie)
+    return render(request, 'admin-panel/movie_form.html', {'form': form, 'title': 'Edit movie'})
+
+
+# --- Directors ---
 
 @login_required
 def admin_directors_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
-
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        director = Director.objects.filter(id=request.POST.get('director_id')).first()
+        if director:
+            director.delete()
+        return redirect('admin_directors')
     search_query = request.GET.get('q', '').strip()
-    create_form = AdminDirectorForm()
-
-    if request.method == 'POST':
-        if request.POST.get('action') == 'delete':
-            director = Director.objects.filter(id=request.POST.get('director_id')).first()
-            if director:
-                director.delete()
-            return redirect('admin_directors')
-
-        director_id = request.POST.get('director_id')
-        if director_id:
-            director_instance = Director.objects.filter(id=director_id).first()
-            create_form = AdminDirectorForm(request.POST, instance=director_instance)
-            if director_instance and create_form.is_valid():
-                create_form.save()
-                return redirect('admin_directors')
-            if not director_instance:
-                create_form.add_error(None, "Director not found.")
-        else:
-            create_form = AdminDirectorForm(request.POST)
-            if create_form.is_valid():
-                create_form.save()
-                return redirect('admin_directors')
-
-    directors = Director.objects.annotate(movie_count=Count('movie')).order_by(
-        'last_name',
-        'first_name',
-    )
+    directors = Director.objects.annotate(movie_count=Count('movie')).order_by('last_name', 'first_name')
     if search_query:
         directors = directors.filter(
-            Q(first_name__icontains=search_query)
-            | Q(last_name__icontains=search_query)
+            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
         )
-
     stats = {
         'total_directors': Director.objects.count(),
         'with_birth_date': Director.objects.filter(birth_date__isnull=False).count(),
         'with_movies': Director.objects.filter(movie__isnull=False).distinct().count(),
     }
+    return render(request, 'admin-panel/directors.html', {
+        'directors': directors,
+        'stats': stats,
+        'search_query': search_query,
+    })
 
-    return render(
-        request,
-        'admin-panel/directors.html',
-        {
-            'directors': directors,
-            'stats': stats,
-            'search_query': search_query,
-            'create_form': create_form,
-        },
-    )
+
+@login_required
+def admin_director_create_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    if request.method == 'POST':
+        form = AdminDirectorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_directors')
+    else:
+        form = AdminDirectorForm()
+    return render(request, 'admin-panel/director_form.html', {'form': form, 'title': 'Add director'})
+
+
+@login_required
+def admin_director_edit_view(request, director_id):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    director = get_object_or_404(Director, id=director_id)
+    if request.method == 'POST':
+        form = AdminDirectorForm(request.POST, instance=director)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_directors')
+    else:
+        form = AdminDirectorForm(instance=director)
+    return render(request, 'admin-panel/director_form.html', {'form': form, 'title': 'Edit director'})
+
+
+# --- Actors ---
 
 @login_required
 def admin_actors_view(request):
     if not request.user.is_superuser:
         return render(request, '403.html', status=403)
-
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        actor = Actor.objects.filter(id=request.POST.get('actor_id')).first()
+        if actor:
+            actor.delete()
+        return redirect('admin_actors')
     search_query = request.GET.get('q', '').strip()
-    create_form = AdminActorForm()
-
-    if request.method == 'POST':
-        if request.POST.get('action') == 'delete':
-            actor = Actor.objects.filter(id=request.POST.get('actor_id')).first()
-            if actor:
-                actor.delete()
-            return redirect('admin_actors')
-
-        actor_id = request.POST.get('actor_id')
-        if actor_id:
-            actor_instance = Actor.objects.filter(id=actor_id).first()
-            create_form = AdminActorForm(request.POST, instance=actor_instance)
-            if actor_instance and create_form.is_valid():
-                create_form.save()
-                return redirect('admin_actors')
-            if not actor_instance:
-                create_form.add_error(None, "Actor not found.")
-        else:
-            create_form = AdminActorForm(request.POST)
-            if create_form.is_valid():
-                create_form.save()
-                return redirect('admin_actors')
-
-    actors = Actor.objects.annotate(movie_count=Count('movie', distinct=True)).order_by(
-        'last_name',
-        'first_name',
-    )
+    actors = Actor.objects.annotate(movie_count=Count('movie', distinct=True)).order_by('last_name', 'first_name')
     if search_query:
         actors = actors.filter(
-            Q(first_name__icontains=search_query)
-            | Q(last_name__icontains=search_query)
+            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
         )
-
     stats = {
         'total_actors': Actor.objects.count(),
         'with_birth_date': Actor.objects.filter(birth_date__isnull=False).count(),
         'with_movies': Actor.objects.filter(movie__isnull=False).distinct().count(),
     }
+    return render(request, 'admin-panel/actors.html', {
+        'actors': actors,
+        'stats': stats,
+        'search_query': search_query,
+    })
 
-    return render(
-        request,
-        'admin-panel/actors.html',
-        {
-            'actors': actors,
-            'stats': stats,
-            'search_query': search_query,
-            'create_form': create_form,
-        },
-    )
+
+@login_required
+def admin_actor_create_view(request):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    if request.method == 'POST':
+        form = AdminActorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_actors')
+    else:
+        form = AdminActorForm()
+    return render(request, 'admin-panel/actor_form.html', {'form': form, 'title': 'Add actor'})
+
+
+@login_required
+def admin_actor_edit_view(request, actor_id):
+    if not request.user.is_superuser:
+        return render(request, '403.html', status=403)
+    actor = get_object_or_404(Actor, id=actor_id)
+    if request.method == 'POST':
+        form = AdminActorForm(request.POST, instance=actor)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_actors')
+    else:
+        form = AdminActorForm(instance=actor)
+    return render(request, 'admin-panel/actor_form.html', {'form': form, 'title': 'Edit actor'})
